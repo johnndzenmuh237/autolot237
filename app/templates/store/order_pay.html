@@ -1,0 +1,66 @@
+{% extends "store/base.html" %}
+{% block title %}Pay for Order {{ order.order_number }} — {{ business_name }}{% endblock %}
+{% block content %}
+<section class="section" style="padding-top:40px;">
+  <div class="wrap" style="max-width:640px;">
+    <span class="eyebrow">Invoice #{{ order.order_number }}</span>
+    <h1>Complete your payment</h1>
+    <p>Your order is reserved. Pay the full amount now, or send a deposit and settle the rest later — your
+      balance and receipt are always visible from your account.</p>
+
+    <div class="summary-box" style="margin:24px 0;">
+      {% for item in order.items %}
+        <div class="summary-row"><span>{{ item.car_listing.title }}</span><span>{{ "{:,.0f}".format(item.line_total) }} CFA</span></div>
+      {% endfor %}
+      <div class="summary-row"><span>Paid so far</span><span>{{ "{:,.0f}".format(order.amount_paid) }} CFA</span></div>
+      <div class="summary-row total"><span>Balance Due</span><span>{{ "{:,.0f}".format(order.balance_due) }} CFA</span></div>
+    </div>
+
+    <h3>Payment instructions</h3>
+    <div class="pay-methods">
+      <div class="pay-method">
+        <strong>Mobile Money (MTN / Orange)</strong>
+        <p style="margin:6px 0 0;">Send to <span class="figure">{{ whatsapp_number or business_phone }}</span> — use your order number <strong>{{ order.order_number }}</strong> as the payment reference.</p>
+      </div>
+      <div class="pay-method">
+        <strong>Bank Transfer</strong>
+        <p style="margin:6px 0 0;">Contact us on WhatsApp for our bank account details.</p>
+      </div>
+    </div>
+
+    <h3>Once you've sent payment</h3>
+    <form method="post" action="{{ url_for('store.order_confirm_payment', order_number=order.order_number) }}">
+      <div class="pay-amount-btns">
+        <button type="button" class="btn btn-primary" onclick="setAmount({{ order.balance_due }})">Pay Full Balance ({{ "{:,.0f}".format(order.balance_due) }} CFA)</button>
+        <button type="button" class="btn btn-outline" onclick="setAmount({{ (order.balance_due / 2)|round(0) }})">Pay Half Now</button>
+      </div>
+      <div class="form-field">
+        <label>Amount I sent (CFA)</label>
+        <input type="number" step="0.01" name="amount" id="pay-amount" max="{{ order.balance_due }}" min="1" value="{{ order.balance_due }}" required>
+      </div>
+      <div class="form-field">
+        <label>Method</label>
+        <select name="method">
+          <option value="mobile_money">Mobile Money</option>
+          <option value="bank_transfer">Bank Transfer</option>
+          <option value="card">Card</option>
+        </select>
+      </div>
+      <button class="btn btn-dark btn-block" type="submit">I've Sent the Payment</button>
+      <p style="margin-top:10px; font-size:.78rem; color:var(--clr-text-muted);">
+        This confirms the payment on your side. Our team reconciles every payment and will reach out if anything doesn't match.
+      </p>
+    </form>
+
+    <p style="margin-top:20px; text-align:center;">
+      Changed your mind? <a href="{{ url_for('store.order_confirmation', order_number=order.order_number) }}" style="color:var(--clr-accent); font-weight:700;">Skip for now — pay on delivery instead →</a>
+    </p>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function setAmount(v) { document.getElementById('pay-amount').value = v; }
+</script>
+{% endblock %}

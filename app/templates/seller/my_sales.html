@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% set page_title = "My Sales" %}
+{% set page_subtitle = "Full history of sales you've recorded" %}
+{% block title %}My Sales{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Product</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Total</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for s in sales %}
+        <tr>
+          <td>{{ s.product.name }}</td>
+          <td class="num figure">{{ s.quantity }}</td>
+          <td class="num figure">{{ s.selling_price|currency }}</td>
+          <td class="num figure">{{ s.total_amount|currency }}</td>
+          <td>
+            {{ s.created_at.strftime('%b %d, %Y %H:%M') }}
+            {% if s.is_returned %}<br><span class="badge badge-neutral">Returned</span>{% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5"><div class="empty-state"><p>You haven't recorded any sales yet.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

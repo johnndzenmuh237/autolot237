@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% set page_title = "Sales History" %}
+{% set page_subtitle = "All recorded sales across every seller" %}
+{% block title %}Sales History{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Seller</th>
+          <th class="num">Qty</th>
+          <th class="num">Price</th>
+          <th class="num">Total</th>
+          <th class="num">Profit</th>
+          <th>Date</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sales %}
+        <tr>
+          <td class="sale-row-product">{{ s.product.name }}</td>
+          <td class="sale-row-seller">{{ s.seller.full_name }}</td>
+          <td class="num figure">{{ s.quantity }}</td>
+          <td class="num figure">{{ s.selling_price|currency }}</td>
+          <td class="num figure">{{ s.total_amount|currency }}</td>
+          <td class="num figure">{{ s.total_profit|currency }}</td>
+          <td>
+            {{ s.created_at.strftime('%b %d, %Y %H:%M') }}
+            {% if s.is_returned %}<br><span class="badge badge-neutral">Returned</span>{% endif %}
+          </td>
+          <td class="num">
+            {% if not s.is_returned %}
+            <form method="POST" action="{{ url_for('sales.process_return', sale_id=s.id) }}"
+                  onsubmit="return confirm('Mark this sale as returned and restock the item?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-secondary btn-sm">Return</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8"><div class="empty-state"><p>No sales recorded yet.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

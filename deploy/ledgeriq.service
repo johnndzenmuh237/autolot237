@@ -1,0 +1,23 @@
+[Unit]
+Description=LedgerIQ Business Management Dashboard (Gunicorn)
+After=network.target
+
+[Service]
+# Change these two paths and the user to match your server
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/business-management-dashboard
+EnvironmentFile=/var/www/business-management-dashboard/.env
+ExecStart=/var/www/business-management-dashboard/venv/bin/gunicorn \
+    -w 3 \
+    -b 127.0.0.1:8000 \
+    --preload \
+    --timeout 60 \
+    --access-logfile /var/log/ledgeriq/access.log \
+    --error-logfile /var/log/ledgeriq/error.log \
+    wsgi:app
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

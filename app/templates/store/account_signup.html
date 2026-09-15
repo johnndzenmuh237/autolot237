@@ -1,0 +1,21 @@
+{% extends "store/base.html" %}
+{% block title %}Create Account — {{ business_name }}{% endblock %}
+{% block content %}
+<div class="store-auth-wrap">
+  <div class="store-auth-card">
+    <div class="brand">&#10022; <span>{{ business_name }}</span></div>
+    <h1>Create your account</h1>
+    <p class="sub">Track orders, payments, and balances in one place</p>
+
+    <form method="POST" action="{{ url_for('account.signup') }}">
+      <div class="form-field"><label>Full Name</label><input type="text" name="full_name" required autofocus></div>
+      <div class="form-field"><label>Phone Number</label><input type="tel" name="phone" required></div>
+      <div class="form-field"><label>Email (optional)</label><input type="email" name="email"></div>
+      <div class="form-field"><label>Password</label><input type="password" name="password" required></div>
+      <button type="submit" class="btn btn-primary btn-block">Create Account</button>
+    </form>
+
+    <div class="foot">Already have an account? <a href="{{ url_for('account.login') }}">Sign in →</a></div>
+  </div>
+</div>
+{% endblock %}

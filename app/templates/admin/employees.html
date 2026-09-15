@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% set page_title = "Employees" %}
+{% set page_subtitle = "Full staff register — contact details, positions, salaries, and payment status" %}
+{% block title %}Employees{% endblock %}
+
+{% block content %}
+<div class="section-head" style="margin-top:0;">
+  <h2>All Employees</h2>
+  <a href="{{ url_for('auth.register_seller') }}" class="btn btn-primary">+ Register Employee</a>
+</div>
+
+<div class="grid grid-3 stat-cards" style="margin-bottom:24px;">
+  <div class="stat-card">
+    <div class="stat-label">Total Employees</div>
+    <div class="stat-value figure">{{ sellers|length }}</div>
+  </div>
+  <div class="stat-card stat-alt">
+    <div class="stat-label">Monthly Payroll</div>
+    <div class="stat-value figure">{{ total_payroll|currency }}</div>
+  </div>
+  <div class="stat-card stat-warn">
+    <div class="stat-label">Unpaid This Month</div>
+    <div class="stat-value figure">{{ payment_status.values()|rejectattr('is_paid')|list|length }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Position</th>
+          <th class="num">Salary</th>
+          <th>Tenure</th>
+          <th>This Month</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in sellers %}
+        {% set pay = payment_status.get(s.id) %}
+        <tr>
+          <td>
+            <div class="product-name-cell">
+              <span>{{ s.full_name }}</span>
+              <span class="product-sku">@{{ s.username }} · {{ s.phone or "no phone on file" }}</span>
+            </div>
+          </td>
+          <td>{{ s.position or "—" }}</td>
+          <td class="num figure">{{ (s.salary or 0)|currency }}</td>
+          <td>{{ s.tenure_label }}</td>
+          <td>
+            {% if pay and pay.is_paid %}
+              <span class="badge badge-good">Paid</span>
+            {% else %}
+              <span class="badge badge-warn">Not Paid</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if s.is_active_account %}
+              <span class="badge badge-good">Active</span>
+            {% else %}
+              <span class="badge badge-neutral">Inactive</span>
+            {% endif %}
+          </td>
+          <td class="num" style="display:flex; gap:6px; justify-content:flex-end;">
+            <a href="{{ url_for('admin.employee_profile', user_id=s.id) }}" class="btn btn-secondary btn-sm">Profile</a>
+            <form method="POST" action="{{ url_for('auth.toggle_seller', user_id=s.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn btn-secondary btn-sm">{{ 'Deactivate' if s.is_active_account else 'Activate' }}</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7"><div class="empty-state"><p>No employees registered yet.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

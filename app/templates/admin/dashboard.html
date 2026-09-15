@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% set page_title = "Dashboard" %}
+{% set page_subtitle = "Real-time overview of stock, sales, and profit" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<div class="grid grid-4 stat-cards">
+  <div class="stat-card">
+    <div class="stat-label">Total Items in Stock</div>
+    <div class="stat-value figure">{{ inventory_totals.total_items }}</div>
+    <div class="stat-sub">{{ inventory_totals.total_products }} active products</div>
+  </div>
+  <div class="stat-card stat-alt">
+    <div class="stat-label">Today's Sales</div>
+    <div class="stat-value figure">{{ today.revenue|currency }}</div>
+    <div class="stat-sub">{{ today.items_sold }} items sold</div>
+  </div>
+  <div class="stat-card stat-alt">
+    <div class="stat-label">This Week</div>
+    <div class="stat-value figure">{{ week.revenue|currency }}</div>
+    <div class="stat-sub">{{ week.items_sold }} items sold</div>
+  </div>
+  <div class="stat-card stat-warn">
+    <div class="stat-label">Monthly Profit</div>
+    <div class="stat-value figure">{{ month.profit|currency }}</div>
+    <div class="stat-sub">{{ month.items_sold }} items sold this month</div>
+  </div>
+</div>
+
+<div class="grid grid-3 stat-cards" style="margin-top:18px;">
+  <div class="stat-card">
+    <div class="stat-label">Total Employees</div>
+    <div class="stat-value figure">{{ total_employees }}</div>
+    <div class="stat-sub"><a href="{{ url_for('admin.employees') }}" class="link-arrow">Manage staff &rarr;</a></div>
+  </div>
+  <div class="stat-card stat-alt">
+    <div class="stat-label">Monthly Payroll</div>
+    <div class="stat-value figure">{{ monthly_payroll|currency }}</div>
+    <div class="stat-sub">Total salaries owed per month</div>
+  </div>
+  <div class="stat-card stat-warn">
+    <div class="stat-label">Unpaid This Month</div>
+    <div class="stat-value figure">{{ unpaid_this_month }}</div>
+    <div class="stat-sub">Employee{{ 's' if unpaid_this_month != 1 else '' }} still awaiting payment</div>
+  </div>
+</div>
+
+<div class="section-head">
+  <h2>Revenue &amp; Profit Trend</h2>
+  <span class="badge badge-neutral">Last 14 days</span>
+</div>
+<div class="card">
+  <div class="chart-wrap">
+    <canvas id="trendChart"
+      data-labels='{{ series|map(attribute="date")|list|tojson }}'
+      data-revenue='{{ series|map(attribute="revenue")|list|tojson }}'
+      data-profit='{{ series|map(attribute="profit")|list|tojson }}'></canvas>
+  </div>
+</div>
+
+<div class="grid grid-3" style="margin-top: 24px; align-items: start;">
+  <div class="card">
+    <div class="card-header">
+      <h3>Inventory Potential</h3>
+    </div>
+    <div style="display:flex; flex-direction:column; gap: 12px;">
+      <div class="rank-row" style="border:none; padding:0;">
+        <div class="rank-info">
+          <div class="rank-name">Inventory Cost</div>
+        </div>
+        <div class="rank-value">{{ inventory_totals.inventory_cost|currency }}</div>
+      </div>
+      <div class="rank-row" style="border:none; padding:0;">
+        <div class="rank-info">
+          <div class="rank-name">Minimum Possible Sales</div>
+        </div>
+        <div class="rank-value">{{ inventory_totals.min_potential_revenue|currency }}</div>
+      </div>
+      <div class="rank-row" style="border:none; padding:0;">
+        <div class="rank-info">
+          <div class="rank-name">Maximum Possible Sales</div>
+        </div>
+        <div class="rank-value">{{ inventory_totals.max_potential_revenue|currency }}</div>
+      </div>
+    </div>
+    <div class="divider"></div>
+    <div class="card-header" style="margin-bottom: 8px;">
+      <h3 style="font-size:0.9rem;">Low Stock</h3>
+      <a href="{{ url_for('inventory.low_stock_alerts') }}" class="link-arrow">View all &rarr;</a>
+    </div>
+    {% if low_stock %}
+      {% for p in low_stock[:5] %}
+        <div class="low-stock-row">
+          <span class="low-stock-name">{{ p.name }}</span>
+          <span class="low-stock-qty">{{ p.stock_quantity }} left</span>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="form-hint">All products are sufficiently stocked.</p>
+    {% endif %}
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>Top Products This Month</h3>
+      <a href="{{ url_for('analytics.profit_analysis') }}" class="link-arrow">Details &rarr;</a>
+    </div>
+    {% if top_products %}
+      {% for t in top_products %}
+        <div class="rank-row">
+          <span class="rank-num">{{ loop.index }}</span>
+          <div class="rank-info">
+            <div class="rank-name">{{ t.name }}</div>
+            <div class="rank-meta">{{ t.qty }} sold</div>
+          </div>
+          <span class="rank-value">{{ t.profit|currency }}</span>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="form-hint">No sales recorded yet this month.</p>
+    {% endif %}
+  </div>
+
+  {% include "components/ai_widget.html" %}
+</div>
+
+{% endblock %}

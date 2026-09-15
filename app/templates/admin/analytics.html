@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% set page_title = period_label %}
+{% set page_subtitle = "Sales, profit, and expense breakdown" %}
+{% block title %}{{ period_label }}{% endblock %}
+
+{% block content %}
+<div class="period-tabs">
+  <a href="{{ url_for('analytics.daily') }}" class="period-tab {{ 'active' if period == 'daily' }}">Daily</a>
+  <a href="{{ url_for('analytics.weekly') }}" class="period-tab {{ 'active' if period == 'weekly' }}">Weekly</a>
+  <a href="{{ url_for('analytics.monthly') }}" class="period-tab {{ 'active' if period == 'monthly' }}">Monthly</a>
+  <a href="{{ url_for('analytics.profit_analysis') }}" class="period-tab {{ 'active' if period == 'profit' }}">Profit Analysis</a>
+</div>
+
+<div class="grid grid-3 stat-cards">
+  <div class="stat-card">
+    <div class="stat-label">Items Sold</div>
+    <div class="stat-value figure">{{ report.items_sold }}</div>
+  </div>
+  <div class="stat-card stat-alt">
+    <div class="stat-label">Revenue</div>
+    <div class="stat-value figure">{{ report.revenue|currency }}</div>
+  </div>
+  <div class="stat-card stat-warn">
+    <div class="stat-label">{{ 'Net Profit' if period == 'monthly' else 'Profit' }}</div>
+    <div class="stat-value figure">{{ report.net_profit|currency }}</div>
+  </div>
+</div>
+
+{% if period in ['monthly', 'profit'] %}
+<div class="section-head"><h2>Expenses Breakdown</h2></div>
+<div class="card">
+  <div class="rank-row" style="border:none; padding: 6px 0;">
+    <div class="rank-info"><div class="rank-name">Product Purchases</div></div>
+    <div class="rank-value">{{ report.expenses.product_purchases|currency }}</div>
+  </div>
+  <div class="rank-row" style="border:none; padding: 6px 0;">
+    <div class="rank-info"><div class="rank-name">Other Business Expenses</div></div>
+    <div class="rank-value">{{ report.expenses.other|currency }}</div>
+  </div>
+  <div class="divider"></div>
+  <div class="rank-row" style="border:none; padding: 6px 0;">
+    <div class="rank-info"><div class="rank-name" style="font-weight:700;">Total Expenses</div></div>
+    <div class="rank-value" style="font-weight:700;">{{ report.expenses.total|currency }}</div>
+  </div>
+</div>
+{% endif %}
+
+{% if series %}
+<div class="section-head"><h2>Trend — Last 30 Days</h2></div>
+<div class="card">
+  <div class="chart-wrap">
+    <canvas id="trendChart"
+      data-labels='{{ series|map(attribute="date")|list|tojson }}'
+      data-revenue='{{ series|map(attribute="revenue")|list|tojson }}'
+      data-profit='{{ series|map(attribute="profit")|list|tojson }}'></canvas>
+  </div>
+</div>
+{% endif %}
+
+<div class="grid grid-2" style="margin-top:24px; align-items:start;">
+  <div class="card">
+    <div class="card-header"><h3>Top Products</h3></div>
+    {% if tops %}
+      {% for t in tops %}
+        <div class="rank-row">
+          <span class="rank-num">{{ loop.index }}</span>
+          <div class="rank-info">
+            <div class="rank-name">{{ t.name }}</div>
+            <div class="rank-meta">{{ t.qty }} sold — {{ t.revenue|round|int }} revenue</div>
+          </div>
+          <span class="rank-value">{{ t.profit|currency }}</span>
+        </div>
+      {% endfor %}
+    {% else %}
+      <p class="form-hint">No sales in this period.</p>
+    {% endif %}
+  </div>
+
+  {% if categories %}
+  <div class="card">
+    <div class="card-header"><h3>Revenue by Category</h3></div>
+    {% set max_rev = categories|map(attribute='revenue')|max %}
+    {% for c in categories %}
+      <div class="breakdown-row">
+        <span class="breakdown-label">{{ c.category }}</span>
+        <div class="breakdown-bar-track">
+          <div class="breakdown-bar-fill" style="width: {{ ((c.revenue / max_rev) * 100) if max_rev else 0 }}%;"></div>
+        </div>
+        <span class="breakdown-value figure">{{ c.revenue|currency }}</span>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if slow %}
+  <div class="card">
+    <div class="card-header"><h3>Slow-Moving Stock</h3></div>
+    {% for p, qty in slow %}
+      <div class="low-stock-row">
+        <span class="low-stock-name">{{ p.name }}</span>
+        <span class="form-hint">{{ qty }} sold / 30d — {{ p.stock_quantity }} in stock</span>
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

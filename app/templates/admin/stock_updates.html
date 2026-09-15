@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% set page_title = "Stock Updates" %}
+{% set page_subtitle = "Record new inventory purchases and restock products" %}
+{% block title %}Stock Updates{% endblock %}
+
+{% block content %}
+<div class="grid grid-2" style="align-items:start;">
+  <div class="card purchase-form-card">
+    <div class="card-header"><h3>Record New Stock</h3></div>
+    <form method="POST" action="{{ url_for('inventory.stock_updates') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group">
+        <label for="product_id">Product</label>
+        <select id="product_id" name="product_id" required>
+          <option value="" disabled selected>Select a product</option>
+          {% for p in products %}
+            <option value="{{ p.id }}">{{ p.name }} ({{ p.stock_quantity }} in stock)</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="quantity">Quantity Purchased</label>
+          <input type="number" id="quantity" name="quantity" min="1" required>
+        </div>
+        <div class="form-group">
+          <label for="cost_per_item">Cost Per Item</label>
+          <input type="number" id="cost_per_item" name="cost_per_item" min="0" step="1" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="note">Note (optional)</label>
+        <input type="text" id="note" name="note" placeholder="e.g. Supplier: TechImport SARL">
+      </div>
+      <div class="form-hint" style="margin-bottom: 16px;">
+        This automatically increases stock and logs the total cost as a business expense.
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Add to Stock</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h3>Recent Purchases</h3></div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Product</th><th class="num">Qty</th><th class="num">Cost/Item</th><th class="num">Total</th></tr>
+        </thead>
+        <tbody>
+          {% for p in recent_purchases %}
+          <tr>
+            <td>{{ p.product.name }}<br><span class="form-hint">{{ p.created_at.strftime('%b %d, %Y') }}</span></td>
+            <td class="num figure">{{ p.quantity }}</td>
+            <td class="num figure">{{ p.cost_per_item|currency }}</td>
+            <td class="num figure">{{ p.total_cost|currency }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4"><div class="empty-state"><p>No purchases recorded yet.</p></div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

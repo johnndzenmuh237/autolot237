@@ -1,0 +1,58 @@
+<div class="card sale-form-card">
+  <form method="POST" action="{{ url_for('sales.record') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="form-group">
+      <label for="productSelect">Select Product</label>
+      <select id="productSelect" name="product_id" required>
+        <option value="" disabled selected>Choose a product</option>
+        {% for p in products %}
+          <option value="{{ p.id }}">{{ p.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <div class="sale-preview">
+      <div class="sale-preview-item stock">
+        <div class="label">Available in Stock</div>
+        <div class="value" id="previewStock">—</div>
+      </div>
+      <div class="sale-preview-item range">
+        <div class="label">Allowed Price Range</div>
+        <div class="value" id="previewRange">—</div>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="quantityInput">Quantity Sold</label>
+        <input type="number" id="quantityInput" name="quantity" min="1" value="1" required>
+      </div>
+      <div class="form-group">
+        <label for="priceInput">Selling Price (per unit)</label>
+        <input type="number" id="priceInput" name="selling_price" min="0" step="1" required>
+        <p class="price-boundary-note" id="boundaryNote"></p>
+      </div>
+    </div>
+
+    {% if current_user.is_admin %}
+    <div class="form-group checkbox-row">
+      <input type="checkbox" id="allow_below_min" name="allow_below_min">
+      <label for="allow_below_min" style="margin:0;">Allow this sale below minimum price</label>
+    </div>
+    {% endif %}
+
+    <div class="sale-preview">
+      <div class="sale-preview-item">
+        <div class="label">Total</div>
+        <div class="value" id="previewTotal">0</div>
+      </div>
+      <div class="sale-preview-item" id="previewProfitRow" style="display:none;">
+        <div class="label">Profit</div>
+        <div class="value" id="previewProfit">0</div>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary btn-block">Complete Sale</button>
+  </form>
+</div>

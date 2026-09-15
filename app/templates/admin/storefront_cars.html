@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Car Listings{% endblock %}
+
+{% block content %}
+<div class="section-head" style="margin-top:0;">
+  <h2>Car Listings</h2>
+  <div class="page-actions">
+    <a href="{{ url_for('store_admin.new_car') }}" class="btn btn-primary">+ Add Car</a>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Vehicle</th><th>Code</th><th class="num">Price</th><th class="num">Stock</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for l in listings %}
+        <tr>
+          <td>
+            <div class="product-name-cell">
+              <span>{{ l.title }}</span>
+              <span class="product-sku">{{ l.mileage_km|int }} km &middot; {{ l.transmission }}</span>
+            </div>
+          </td>
+          <td>{{ l.listing_code }}</td>
+          <td class="num figure">{{ l.product.min_price|currency }}</td>
+          <td class="num"><span class="stock-pill {{ 'stock-low' if l.product.stock_quantity == 0 else 'stock-ok' }}">{{ l.product.stock_quantity }}</span></td>
+          <td>{{ 'Published' if l.is_published else 'Hidden' }}</td>
+          <td class="num">
+            <a href="{{ url_for('store_admin.edit_car', listing_id=l.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+            <form method="post" action="{{ url_for('store_admin.unpublish_car', listing_id=l.id) }}" style="display:inline;">
+              <button class="btn btn-secondary btn-sm" type="submit">{{ 'Hide' if l.is_published else 'Publish' }}</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6"><div class="empty-state"><p>No car listings yet. Add your first car to publish it to the storefront.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

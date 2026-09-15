@@ -1,0 +1,56 @@
+<div class="card">
+  <div class="card-header">
+    <h3>Available Stock — Tick What Was Sold</h3>
+    <span class="badge badge-neutral">{{ products|length }} products</span>
+  </div>
+  <p class="form-hint" style="margin-bottom:16px;">
+    This list only displays current stock — it cannot be edited here. Set the quantity
+    and price for an item, then tick the checkbox to record the sale instantly.
+  </p>
+
+  <div class="table-wrap">
+    <table id="checklistTable">
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Category</th>
+          <th class="num">Stock</th>
+          <th class="num">Price Range</th>
+          <th class="num">Qty</th>
+          <th class="num">Selling Price</th>
+          {% if current_user.is_admin %}<th></th>{% endif %}
+          <th class="num">Sold?</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr id="row-{{ p.id }}" data-product-id="{{ p.id }}" data-min="{{ p.min_price }}" data-max="{{ p.max_price }}">
+          <td>{{ p.name }}</td>
+          <td>{{ p.category }}</td>
+          <td class="num"><span class="stock-pill {{ 'stock-low' if p.is_low_stock else 'stock-ok' }}" id="stock-{{ p.id }}">{{ p.stock_quantity }}</span></td>
+          <td class="num price-range">{{ "%.0f"|format(p.min_price) }} – {{ "%.0f"|format(p.max_price) }}</td>
+          <td class="num"><input type="number" class="qty-input" id="qty-{{ p.id }}" min="1" value="1" style="width:64px;"></td>
+          <td class="num"><input type="number" class="price-input" id="price-{{ p.id }}" min="0" step="1" placeholder="{{ p.min_price|round|int }}" style="width:100px;"></td>
+          {% if current_user.is_admin %}
+          <td class="num" style="white-space:nowrap;">
+            <label class="checkbox-row" style="justify-content:flex-end; gap:4px;">
+              <input type="checkbox" id="override-{{ p.id }}"> <span class="form-hint" style="margin:0;">below min OK</span>
+            </label>
+          </td>
+          {% endif %}
+          <td class="num">
+            <input type="checkbox" class="sold-checkbox" id="tick-{{ p.id }}" data-product-id="{{ p.id }}" style="width:20px; height:20px;">
+          </td>
+        </tr>
+        <tr id="status-row-{{ p.id }}" class="status-row" style="display:none;">
+          <td colspan="{{ 8 if current_user.is_admin else 7 }}">
+            <span id="status-{{ p.id }}" class="form-hint"></span>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8"><div class="empty-state"><p>No products available yet.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>

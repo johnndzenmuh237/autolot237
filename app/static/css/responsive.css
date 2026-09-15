@@ -1,0 +1,23 @@
+@media (max-width: 900px) {
+  .sidebar {
+    position: fixed;
+    left: -260px;
+    z-index: 100;
+    transition: left 0.2s ease;
+    box-shadow: var(--shadow-md);
+  }
+  .sidebar.open { left: 0; }
+  .topbar-toggle { display: block; }
+  .content { padding: 20px 16px 40px; }
+  .grid-4, .grid-3, .grid-2 { grid-template-columns: 1fr; }
+  .form-row { flex-direction: column; }
+  .sale-preview { grid-template-columns: 1fr; }
+  .topbar { padding: 16px; }
+  .breakdown-label { width: 90px; font-size: 0.78rem; }
+}
+
+@media (max-width: 600px) {
+  .auth-card { padding: 26px 22px; }
+  table { font-size: 0.8rem; }
+  th, td { padding: 8px; }
+}

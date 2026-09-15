@@ -1,0 +1,78 @@
+{% extends "store/base.html" %}
+{% block title %}Checkout — {{ business_name }}{% endblock %}
+{% block content %}
+<section class="section" style="padding-top:36px;">
+  <div class="wrap">
+    <h1>Checkout</h1>
+    <div class="detail-layout" style="grid-template-columns: 1.6fr 1fr;">
+      <form method="post" id="checkout-form">
+        <h3>Your details</h3>
+        <div class="form-grid">
+          <div class="form-field"><label>Full name</label><input type="text" name="full_name" required></div>
+          <div class="form-field"><label>Phone (WhatsApp works best)</label><input type="tel" name="phone" required></div>
+        </div>
+        <div class="form-grid">
+          <div class="form-field"><label>Email (optional)</label><input type="email" name="email"></div>
+          <div class="form-field"><label>Create a password (optional)</label><input type="password" name="account_password" placeholder="Track this order online later"></div>
+        </div>
+
+        <h3>Fulfillment</h3>
+        <div class="option-cards" style="margin-bottom:20px;">
+          <label class="option-card">
+            <input type="radio" name="fulfillment_type" value="pickup" checked onchange="toggleShipping()">
+            <div><div class="title">Pickup at Showroom</div><div class="desc">Collect your car from our Douala showroom once it's ready.</div></div>
+          </label>
+          <label class="option-card">
+            <input type="radio" name="fulfillment_type" value="delivery" onchange="toggleShipping()">
+            <div><div class="title">Delivery</div><div class="desc">We deliver to your address — provide the details below.</div></div>
+          </label>
+        </div>
+
+        <div id="shipping-fields" style="display:none;">
+          <div class="form-grid">
+            <div class="form-field"><label>Delivery address</label><input type="text" name="shipping_address"></div>
+            <div class="form-field"><label>City</label><input type="text" name="shipping_city"></div>
+          </div>
+          <div class="form-field"><label>Delivery notes (optional)</label><input type="text" name="shipping_notes" placeholder="Landmark, best time to deliver…"></div>
+        </div>
+
+        <h3>Payment</h3>
+        <div class="option-cards" style="margin-bottom:14px;">
+          <label class="option-card">
+            <input type="radio" name="payment_method" value="pay_now" checked>
+            <div><div class="title">Pay Now</div><div class="desc">Pay online (full amount or a deposit) right after placing your order.</div></div>
+          </label>
+          <label class="option-card">
+            <input type="radio" name="payment_method" value="pay_on_delivery">
+            <div><div class="title">Pay on Delivery / Pickup</div><div class="desc">Reserve the car now, pay in cash or Mobile Money when it arrives.</div></div>
+          </label>
+        </div>
+
+        <div class="form-field"><label>Order notes (optional)</label><textarea name="notes" placeholder="Anything we should know?"></textarea></div>
+
+        <button class="btn btn-primary btn-block" style="margin-top:10px;" type="submit">Place Order</button>
+        <p style="margin-top:10px; font-size:.8rem;">By placing this order you agree to be contacted by our sales team to confirm details and schedule vehicle handover.</p>
+      </form>
+
+      <div class="summary-box">
+        <h3>Order summary</h3>
+        {% for car in cars %}
+          <div class="summary-row"><span>{{ car.title }}</span><span>{{ "{:,.0f}".format(car.price) }} CFA</span></div>
+        {% endfor %}
+        <div class="summary-row total"><span>Total</span><span>{{ "{:,.0f}".format(total) }} CFA</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleShipping() {
+  var delivery = document.querySelector('input[name="fulfillment_type"]:checked').value === 'delivery';
+  var box = document.getElementById('shipping-fields');
+  box.style.display = delivery ? 'block' : 'none';
+  box.querySelectorAll('input[name="shipping_address"]').forEach(function(el){ el.required = delivery; });
+}
+</script>
+{% endblock %}

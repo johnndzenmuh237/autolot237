@@ -1,0 +1,37 @@
+{% extends "store/base.html" %}
+{% block title %}Your Cart — {{ business_name }}{% endblock %}
+{% block content %}
+<section class="section" style="padding-top:36px;">
+  <div class="wrap">
+    <h1>Your cart</h1>
+
+    {% if not cars %}
+      <p>Your cart is empty. <a href="{{ url_for('store.browse') }}">Browse cars →</a></p>
+    {% else %}
+      <div class="detail-layout" style="grid-template-columns: 1.6fr 1fr;">
+        <div>
+          {% for car in cars %}
+          <div class="cart-line">
+            <img src="{{ car.main_image or 'https://images.unsplash.com/photo-1493238792000-8113da705763?w=200&q=80' }}" alt="{{ car.title }}">
+            <div class="grow">
+              <h3 style="margin:0;">{{ car.title }}</h3>
+              <div class="car-card-meta">{{ "{:,}".format(car.mileage_km) }} km &middot; {{ car.transmission|capitalize }}</div>
+            </div>
+            <div class="car-card-price" style="padding-top:0;">{{ "{:,.0f}".format(car.price) }} CFA</div>
+            <form method="post" action="{{ url_for('store.cart_remove', listing_id=car.id) }}">
+              <button class="btn btn-outline btn-sm" type="submit">Remove</button>
+            </form>
+          </div>
+          {% endfor %}
+        </div>
+        <div class="summary-box">
+          <h3>Order summary</h3>
+          <div class="summary-row"><span>{{ cars|length }} vehicle{{ 's' if cars|length != 1 }}</span><span>{{ "{:,.0f}".format(total) }} CFA</span></div>
+          <div class="summary-row total"><span>Total</span><span>{{ "{:,.0f}".format(total) }} CFA</span></div>
+          <a class="btn btn-primary btn-block" style="margin-top:16px;" href="{{ url_for('store.checkout') }}">Proceed to Checkout</a>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "store/base.html" %}
+{% block title %}Browse Cars — {{ business_name }}{% endblock %}
+{% block meta_description %}Filter {{ total }} verified new and used cars by make, price, and body type at {{ business_name }}.{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top:36px;">
+  <div class="wrap">
+    <div class="eyebrow">{{ total }} car{{ 's' if total != 1 }} available</div>
+    <h1 style="margin-bottom:26px;">Browse the lot</h1>
+
+    <div class="browse-layout">
+      <aside class="filters">
+        <h3>Filters</h3>
+        <form id="filter-form" method="get">
+          <div class="filter-group">
+            <label for="q">Search</label>
+            <input type="text" id="q" name="q" value="{{ filters.q }}" placeholder="Make or model">
+          </div>
+          <div class="filter-group">
+            <label for="make">Make</label>
+            <select id="make" name="make">
+              <option value="">Any make</option>
+              {% for m in makes %}<option value="{{ m }}" {{ 'selected' if filters.make == m }}>{{ m }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="body_type">Body type</label>
+            <select id="body_type" name="body_type">
+              <option value="">Any body type</option>
+              {% for b in body_types %}<option value="{{ b }}" {{ 'selected' if filters.body_type == b }}>{{ b|capitalize }}</option>{% endfor %}
+            </select>
+          </div>
+          <div class="filter-group">
+            <label for="condition">Condition</label>
+            <select id="condition" name="condition">
+              <option value="">New or used</option>
+              <option value="new" {{ 'selected' if filters.condition == 'new' }}>New</option>
+              <option value="used" {{ 'selected' if filters.condition == 'used' }}>Used</option>
+            </select>
+          </div>
+          <div class="filter-group">
+            <label>Price range (CFA)</label>
+            <div class="filter-range">
+              <input type="number" name="min_price" value="{{ filters.min_price or '' }}" placeholder="Min">
+              <input type="number" name="max_price" value="{{ filters.max_price or '' }}" placeholder="Max">
+            </div>
+          </div>
+          <button class="btn btn-primary btn-block" type="submit">Apply filters</button>
+        </form>
+      </aside>
+
+      <div>
+        <div class="results-bar">
+          <span>{{ total }} result{{ 's' if total != 1 }}</span>
+          <form method="get" id="sort-form">
+            {% for k, v in filters.items() if k != 'sort' and v %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+            <select name="sort" onchange="this.form.submit()">
+              <option value="newest" {{ 'selected' if filters.sort == 'newest' }}>Newest first</option>
+              <option value="price_asc" {{ 'selected' if filters.sort == 'price_asc' }}>Price: Low to High</option>
+              <option value="price_desc" {{ 'selected' if filters.sort == 'price_desc' }}>Price: High to Low</option>
+              <option value="year_desc" {{ 'selected' if filters.sort == 'year_desc' }}>Newest Model Year</option>
+            </select>
+          </form>
+        </div>
+
+        <div class="car-grid">
+          {% for car in cars %}
+            {% include "store/components/car_card.html" %}
+          {% else %}
+            <p>No cars match those filters — try widening your search.</p>
+          {% endfor %}
+        </div>
+
+        {% if total > per_page %}
+        <div class="pagination">
+          {% for p in range(1, ((total - 1) // per_page) + 2) %}
+            <a href="?{% for k, v in filters.items() if v %}{{ k }}={{ v }}&{% endfor %}page={{ p }}" class="{{ 'active' if p == page }}">{{ p }}</a>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% set page_title = "Low Stock Alerts" if low_stock_view else "All Products" %}
+{% set page_subtitle = "Products currently below their restock threshold" if low_stock_view else "Manage your product catalog, pricing, and stock" %}
+{% block title %}Inventory{% endblock %}
+
+{% block content %}
+<div class="section-head" style="margin-top:0;">
+  <h2>{{ page_title }}</h2>
+  <div class="page-actions">
+    <a href="{{ url_for('inventory.stock_updates') }}" class="btn btn-secondary">Stock Updates</a>
+    <a href="{{ url_for('inventory.add_product') }}" class="btn btn-primary">+ Add Product</a>
+  </div>
+</div>
+
+{% if categories %}
+<div class="category-filter">
+  <a href="{{ url_for('inventory.list_products') }}" class="category-chip {{ 'active' if not selected_category }}">All</a>
+  {% for c in categories %}
+    <a href="{{ url_for('inventory.list_products', category=c) }}" class="category-chip {{ 'active' if selected_category == c }}">{{ c }}</a>
+  {% endfor %}
+</div>
+{% endif %}
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Product</th>
+          <th>Category</th>
+          <th class="num">Stock</th>
+          <th class="num">Cost Price</th>
+          <th class="num">Price Range</th>
+          <th class="num">Inventory Value</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in products %}
+        <tr>
+          <td>
+            <div class="product-name-cell">
+              <span>{{ p.name }}</span>
+              {% if p.sku %}<span class="product-sku">{{ p.sku }}</span>{% endif %}
+            </div>
+          </td>
+          <td>{{ p.category }}</td>
+          <td class="num">
+            <span class="stock-pill {{ 'stock-low' if p.is_low_stock else 'stock-ok' }}">{{ p.stock_quantity }}</span>
+          </td>
+          <td class="num figure">{{ p.cost_price|currency }}</td>
+          <td class="num price-range">{{ "%.0f"|format(p.min_price) }} – {{ "%.0f"|format(p.max_price) }}</td>
+          <td class="num figure">{{ p.inventory_cost_value|currency }}</td>
+          <td class="num">
+            <a href="{{ url_for('inventory.edit_product', product_id=p.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7"><div class="empty-state"><p>No products found.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

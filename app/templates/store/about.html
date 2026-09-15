@@ -1,0 +1,56 @@
+{% extends "store/base.html" %}
+{% block title %}About Us — {{ business_name }}{% endblock %}
+{% block meta_description %}Learn how {{ business_name }} inspects, prices, and sells verified cars online in Douala, Cameroon.{% endblock %}
+
+{% block content %}
+<section class="hp-hero" style="min-height:380px;">
+  <div class="hp-hero-left">
+    <span class="eyebrow">Our Story</span>
+    <h1>Built to make buying a car in Cameroon <em>easy to trust</em>.</h1>
+    <p class="lead">{{ business_name }} started with a simple frustration: buying a used car locally meant
+      guessing at condition, haggling over price, and hoping for the best. We built a lot — and a website —
+      where every car is inspected first and priced honestly.</p>
+  </div>
+  <div class="hp-hero-right">
+    <div class="hero-img-cell big"><img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80" alt="Our showroom lot"></div>
+    <div class="hero-img-cell"><img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=500&q=80" alt="Mechanic inspecting a car"></div>
+    <div class="hero-img-cell"><img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=500&q=80" alt="Car handover"></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="hero-stats" style="margin-top:0;">
+      <div><b style="color:var(--clr-primary);">300+</b><span>Cars sold since launch</span></div>
+      <div><b style="color:var(--clr-primary);">30-day</b><span>Mechanical warranty</span></div>
+      <div><b style="color:var(--clr-primary);">4.8/5</b><span>Average buyer rating</span></div>
+      <div><b style="color:var(--clr-primary);">Douala</b><span>Showroom &amp; delivery across Cameroon</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="wrap">
+    <div class="section-head"><div><span class="eyebrow">What we stand for</span><h2>How we're different</h2></div></div>
+    <div class="steps">
+      <div class="step-card"><div class="step-no">01</div><h3>Inspected first</h3><p>Every car is mechanically checked before it's ever listed — no surprises after handover.</p></div>
+      <div class="step-card"><div class="step-no">02</div><h3>One fair price</h3><p>No haggling. The price you see online is the price you pay, listed transparently.</p></div>
+      <div class="step-card"><div class="step-no">03</div><h3>Flexible payment</h3><p>Pay online in full, pay a deposit, or pay when your car arrives — your call.</p></div>
+      <div class="step-card"><div class="step-no">04</div><h3>Real support</h3><p>Reach a real person on WhatsApp or chat with our assistant, any time.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap" style="max-width:760px;">
+    <span class="eyebrow">Get in touch</span>
+    <h2>Visit the showroom, or reach us online</h2>
+    <p>{{ business_name }} is based in {{ business_address }}. Come see a car in person, or start
+      the whole thing from your phone — browse, chat, and check out without ever leaving home.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ url_for('store.browse') }}">Browse the Lot</a>
+      <a class="btn btn-outline" href="#" data-wa-button data-car-slug="">Chat on WhatsApp</a>
+    </div>
+  </div>
+</section>
+{% endblock %}

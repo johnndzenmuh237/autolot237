@@ -1,0 +1,88 @@
+{% extends "store/base.html" %}
+{% block content %}
+
+<section class="hp-hero">
+  <div class="hp-hero-left">
+    <span class="eyebrow">Verified inventory &middot; Douala, Cameroon</span>
+    <h1>Buy your next car <em>online</em>, without the guesswork.</h1>
+    <p class="lead">Every vehicle on {{ business_name }} is inspected, priced transparently, and ready for a
+      test drive. Browse the lot, chat with our AI assistant or on WhatsApp, and check out online — pay now
+      or pay on delivery, your choice.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ url_for('store.browse') }}">Browse the Lot</a>
+      <a class="btn btn-outline-light" href="#" data-wa-button data-car-slug="">Chat on WhatsApp</a>
+    </div>
+    <div class="hero-stats">
+      <div><b>{{ latest|length }}+</b><span>Cars in stock</span></div>
+      <div><b>30-day</b><span>Mechanical warranty</span></div>
+      <div><b>Instant</b><span>Invoice on order</span></div>
+    </div>
+  </div>
+  <div class="hp-hero-right">
+    <div class="hero-img-cell big"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80" alt="Featured car"></div>
+    <div class="hero-img-cell"><img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=500&q=80" alt="SUV on the lot"></div>
+    <div class="hero-img-cell"><img src="https://images.unsplash.com/photo-1502877338535-766e1452684a?w=500&q=80" alt="Sedan on the lot"></div>
+  </div>
+</section>
+
+<div class="wrap">
+  <form class="search-bar" action="{{ url_for('store.browse') }}" method="get">
+    <input type="text" name="q" placeholder="Search make or model, e.g. Toyota Corolla">
+    <select name="make">
+      <option value="">Any make</option>
+      {% for m in makes %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
+    </select>
+    <select name="condition">
+      <option value="">New or used</option>
+      <option value="new">New</option>
+      <option value="used">Used</option>
+    </select>
+    <button class="btn btn-primary" type="submit">Search</button>
+  </form>
+</div>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Handpicked</span>
+        <h2>Featured this week</h2>
+      </div>
+      <a class="btn btn-outline" href="{{ url_for('store.browse') }}">View all cars →</a>
+    </div>
+    <div class="car-grid">
+      {% for car in featured %}
+        {% include "store/components/car_card.html" %}
+      {% else %}
+        <p>New listings are coming soon — check back shortly.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="how-it-works">
+  <div class="wrap">
+    <div class="section-head"><div><span class="eyebrow">Process</span><h2>How buying online works</h2></div></div>
+    <div class="steps">
+      <div class="step-card"><div class="step-no">01</div><h3>Browse &amp; compare</h3><p>Filter by make, budget, and body type across our full verified inventory.</p></div>
+      <div class="step-card"><div class="step-no">02</div><h3>Ask our assistant</h3><p>Chat on-site or WhatsApp for pricing, financing, or to book a test drive.</p></div>
+      <div class="step-card"><div class="step-no">03</div><h3>Choose how to pay</h3><p>Pay online now (full or a deposit) or pay when your car arrives.</p></div>
+      <div class="step-card"><div class="step-no">04</div><h3>Get your invoice</h3><p>An itemized invoice is generated instantly — track it anytime from your account.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="section-head"><div><span class="eyebrow">Just listed</span><h2>Latest arrivals</h2></div></div>
+    <div class="car-grid">
+      {% for car in latest %}
+        {% include "store/components/car_card.html" %}
+      {% else %}
+        <p>No cars published yet — add your first listing from the admin dashboard.</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% set page_title = "Record Sale" %}
+{% set page_subtitle = "This list only shows current stock. Set quantity and price, then tick to sell." %}
+{% block title %}Record Sale{% endblock %}
+{% block content %}
+{% include "components/sale_checklist.html" %}
+{% endblock %}

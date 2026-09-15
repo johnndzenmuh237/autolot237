@@ -1,0 +1,27 @@
+<div class="card ai-widget">
+  <div class="card-header">
+    <h3>AI Business Insights</h3>
+    <a href="{{ url_for('ai.insights') }}" class="link-arrow">View all &rarr;</a>
+  </div>
+  {% if latest_insights %}
+    <div class="insight-list">
+      {% for insight in latest_insights %}
+        <div class="insight-row insight-{{ insight.level }}">
+          <span class="insight-dot"></span>
+          <div>
+            <div class="insight-title">{{ insight.title }}</div>
+            <p class="insight-message">{{ insight.message }}</p>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="empty-state">
+      <p>No insights generated yet.</p>
+      <form action="{{ url_for('ai.refresh_insights') }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button type="submit" class="btn btn-primary btn-sm">Generate insights</button>
+      </form>
+    </div>
+  {% endif %}
+</div>

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block auth_content %}
+<div class="auth-wrap">
+  <div class="auth-card">
+    <div class="auth-brand">
+      <span class="brand-mark">L</span>
+      <span class="brand-name" style="color:var(--ink);">Ledger<em style="color:var(--accent);">IQ</em></span>
+    </div>
+    <h2 class="auth-title">Admin sign in</h2>
+    <p class="auth-subtitle">Full access — inventory, sales, analytics, staff, and the storefront.</p>
+
+    <form method="POST" action="{{ url_for('auth.login') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" required autofocus autocomplete="username">
+      </div>
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" required autocomplete="current-password">
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Sign in</button>
+    </form>
+
+    <div class="auth-hint">
+      Demo admin: admin / admin123
+    </div>
+    <p style="text-align:center; margin-top:16px; font-size:.85rem;">
+      Not an admin? <a href="{{ url_for('auth.seller_login') }}" style="color:var(--accent); font-weight:600;">Go to seller sign in →</a>
+    </p>
+  </div>
+  <p class="auth-footer-note">LedgerIQ Business Management Dashboard</p>
+</div>
+{% endblock %}
