@@ -16,6 +16,9 @@
       <div><b>{{ latest|length }}+</b><span>Cars in stock</span></div>
       <div><b>30-day</b><span>Mechanical warranty</span></div>
       <div><b>Instant</b><span>Invoice on order</span></div>
+      {% if site_review_count > 0 %}
+      <div><b>{{ site_avg_rating }}★</b><span><a href="{{ url_for('store.reviews') }}" style="color:inherit; text-decoration:underline;">{{ site_review_count }} review{{ 's' if site_review_count != 1 }}</a></span></div>
+      {% endif %}
     </div>
   </div>
   <div class="hp-hero-right">

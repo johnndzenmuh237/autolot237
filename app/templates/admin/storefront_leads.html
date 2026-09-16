@@ -28,6 +28,7 @@
           <td style="max-width:280px;">{{ (lead.message or '')[:160] }}</td>
           <td>
             <form method="post" action="{{ url_for('store_admin.update_lead_status', lead_id=lead.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <select name="status" onchange="this.form.submit()">
                 {% for s in ['new', 'contacted', 'won', 'lost'] %}
                   <option value="{{ s }}" {{ 'selected' if lead.status == s }}>{{ s|title }}</option>

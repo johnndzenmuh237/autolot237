@@ -1,0 +1,37 @@
+{% extends "store/base.html" %}
+{% block title %}Refund Policy — {{ business_name }}{% endblock %}
+{% block meta_description %}Our policy on cancellations, deposits, and refunds for vehicle orders placed through {{ business_name }}.{% endblock %}
+
+{% block content %}
+{% set page_title = "Refund Policy" %}
+{% set breadcrumbs = [{"label": "Refund Policy"}] %}
+{% include "store/components/page_header.html" %}
+
+<section class="section">
+  <div class="wrap" style="max-width:760px;">
+    <p><em>Last updated: {{ current_year }}.</em></p>
+
+    <h2>1. Before payment</h2>
+    <p>If you've placed an order but haven't paid anything yet (chosen "Pay on Delivery"), you can cancel at any time before handover with no charge — just contact our team and the vehicle is released back onto the lot.</p>
+
+    <h2>2. Deposits</h2>
+    <p>A deposit reserves a specific vehicle for you and reflects real costs on our side (the car is held off the market while other buyers can't purchase it). If you cancel after paying a deposit, contact us directly — we handle these case by case, and any refund due will be processed back to the payment method used, minus any costs already reasonably incurred.</p>
+
+    <h2>3. Full payment before handover</h2>
+    <p>If you've paid in full but the vehicle hasn't been handed over yet, and you wish to cancel, contact us as soon as possible. Refunds in this situation are also handled case by case and processed back to your original payment method.</p>
+
+    <h2>4. After handover</h2>
+    <p>Once a vehicle has been handed over to you, the sale is final — this is standard for used vehicle sales. If a mechanical fault covered by our 30-day warranty appears, contact us immediately; we will repair the covered fault rather than issue a refund, except in cases where the fault cannot reasonably be repaired.</p>
+
+    <h2>5. How refunds are issued</h2>
+    <p>Approved refunds are sent back the same way payment was received (Mobile Money, bank transfer) and are typically processed within a few business days of approval.</p>
+
+    <h2>6. Contact</h2>
+    <p>To request a cancellation or refund, contact us at <a href="mailto:{{ business_email }}">{{ business_email }}</a> or via WhatsApp, with your order number ready.</p>
+
+    <p style="margin-top:40px; padding:16px; background:var(--clr-bg-alt); border-radius:var(--radius-md); font-size:.85rem; color:var(--clr-text-muted);">
+      This page is a general-purpose refund policy template. Review it against your actual business practices and Cameroon's consumer protection requirements before launch.
+    </p>
+  </div>
+</section>
+{% endblock %}

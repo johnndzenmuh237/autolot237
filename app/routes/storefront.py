@@ -7,7 +7,7 @@ from flask import (
     jsonify, send_file, Response, current_app,
 )
 
-from app import db
+from app import db, limiter
 from app.models.product import Product
 from app.models.car import CarListing
 from app.models.lead import Lead
@@ -47,6 +47,8 @@ def _cart_listings():
 
 @store_bp.context_processor
 def inject_store_globals():
+    from app.models.review import Review
+    avg_rating, review_count = Review.average_rating()
     return {
         "business_name": BUSINESS_NAME,
         "whatsapp_number": WHATSAPP_NUMBER,
@@ -57,6 +59,8 @@ def inject_store_globals():
         "business_phone": os.environ.get("BUSINESS_PHONE", ""),
         "business_address": os.environ.get("BUSINESS_ADDRESS", "Bonanjo, Douala, Cameroon"),
         "logged_in_customer": current_customer(),
+        "site_avg_rating": avg_rating,
+        "site_review_count": review_count,
     }
 
 
@@ -75,6 +79,66 @@ def home():
 @store_bp.route("/about")
 def about():
     return render_template("store/about.html")
+
+
+@store_bp.route("/reviews", methods=["GET", "POST"])
+@limiter.limit("5 per minute", methods=["POST"])
+def reviews():
+    from app.models.review import Review
+
+    if request.method == "POST":
+        # Honeypot: a field hidden from real visitors via CSS. Bots that
+        # fill in every field will trip this; humans never see it.
+        if request.form.get("website_hp"):
+            return redirect(url_for("store.reviews"))
+
+        name = request.form.get("reviewer_name", "").strip()
+        email = request.form.get("email", "").strip() or None
+        rating = request.form.get("rating", type=int)
+        comment = request.form.get("comment", "").strip()
+
+        errors = []
+        if not name:
+            errors.append("Please enter your name.")
+        if not rating or rating < 1 or rating > 5:
+            errors.append("Please choose a star rating.")
+        if not comment or len(comment) < 10:
+            errors.append("Please write at least a short sentence about your experience.")
+
+        if errors:
+            for e in errors:
+                flash(e, "error")
+            return redirect(url_for("store.reviews"))
+
+        review = Review(reviewer_name=name, email=email, rating=rating, comment=comment, status="pending")
+        db.session.add(review)
+        db.session.commit()
+        flash("Thanks for your review! It's been submitted and will appear once our team approves it.", "success")
+        return redirect(url_for("store.reviews"))
+
+    approved = Review.query.filter_by(status="approved").order_by(Review.is_featured.desc(), Review.created_at.desc()).all()
+    avg_rating, review_count = Review.average_rating()
+    return render_template("store/reviews.html", approved_reviews=approved, avg_rating=avg_rating, review_count=review_count)
+
+
+@store_bp.route("/privacy-policy")
+def legal_privacy():
+    return render_template("store/legal_privacy.html")
+
+
+@store_bp.route("/terms-and-conditions")
+def legal_terms():
+    return render_template("store/legal_terms.html")
+
+
+@store_bp.route("/refund-policy")
+def legal_refund():
+    return render_template("store/legal_refund.html")
+
+
+@store_bp.route("/cookies-policy")
+def legal_cookies():
+    return render_template("store/legal_cookies.html")
 
 
 @store_bp.route("/cars")
@@ -394,6 +458,12 @@ def sitemap():
     pages = [
         {"loc": url_for("store.home", _external=True), "priority": "1.0"},
         {"loc": url_for("store.browse", _external=True), "priority": "0.9"},
+        {"loc": url_for("store.about", _external=True), "priority": "0.7"},
+        {"loc": url_for("store.reviews", _external=True), "priority": "0.6"},
+        {"loc": url_for("store.legal_privacy", _external=True), "priority": "0.3"},
+        {"loc": url_for("store.legal_terms", _external=True), "priority": "0.3"},
+        {"loc": url_for("store.legal_refund", _external=True), "priority": "0.3"},
+        {"loc": url_for("store.legal_cookies", _external=True), "priority": "0.3"},
     ]
     for car in CarListing.query.filter_by(is_published=True).all():
         pages.append({
@@ -422,6 +492,18 @@ def robots():
         "Disallow: /checkout",
         "Disallow: /cart",
         "Disallow: /admin",
+        "Disallow: /seller",
+        "Disallow: /seller-login",
+        "Disallow: /login",
+        "Disallow: /staff",
+        "Disallow: /account",
+        "Disallow: /inventory",
+        "Disallow: /sales",
+        "Disallow: /analytics",
+        "Disallow: /expenses",
+        "Disallow: /ai",
+        "Disallow: /order/",
+        "Disallow: /invoice/",
         f"Sitemap: {url_for('store.sitemap', _external=True)}",
     ]
     return Response("\n".join(lines), mimetype="text/plain")

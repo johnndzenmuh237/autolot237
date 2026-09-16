@@ -9,6 +9,7 @@
 
 <div class="card" style="padding:24px;">
   <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="form-row-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
       <div class="form-field"><label>Make</label><input type="text" name="make" value="{{ listing.make if listing }}" required></div>
       <div class="form-field"><label>Model</label><input type="text" name="model" value="{{ listing.model if listing }}" required></div>

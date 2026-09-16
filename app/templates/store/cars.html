@@ -3,10 +3,13 @@
 {% block meta_description %}Filter {{ total }} verified new and used cars by make, price, and body type at {{ business_name }}.{% endblock %}
 
 {% block content %}
-<section class="section" style="padding-top:36px;">
+{% set page_title = "Browse the Lot" %}
+{% set page_subtitle = total ~ " verified car" ~ ('s' if total != 1) ~ " ready for a test drive or online checkout." %}
+{% set breadcrumbs = [{"label": "Browse Cars"}] %}
+{% include "store/components/page_header.html" %}
+<section class="section" style="padding-top:44px;">
   <div class="wrap">
     <div class="eyebrow">{{ total }} car{{ 's' if total != 1 }} available</div>
-    <h1 style="margin-bottom:26px;">Browse the lot</h1>
 
     <div class="browse-layout">
       <aside class="filters">

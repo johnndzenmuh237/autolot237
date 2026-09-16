@@ -133,4 +133,68 @@ document.addEventListener("DOMContentLoaded", function () {
         });
     });
   }
+
+  /* ---------- cookie consent + analytics ---------- */
+  var CONSENT_KEY = "autolot_cookie_consent"; // "accepted" | "declined"
+
+  function loadAnalytics() {
+    var gaId = window.AUTOLOT_GA_ID;
+    if (!gaId || window.gtag) return; // no GA configured, or already loaded
+    var s = document.createElement("script");
+    s.async = true;
+    s.src = "https://www.googletagmanager.com/gtag/js?id=" + gaId;
+    document.head.appendChild(s);
+    window.dataLayer = window.dataLayer || [];
+    window.gtag = function () { window.dataLayer.push(arguments); };
+    window.gtag("js", new Date());
+    window.gtag("config", gaId, { anonymize_ip: true });
+  }
+
+  function trackEvent(name, params) {
+    if (typeof window.gtag === "function") {
+      window.gtag("event", name, params || {});
+    }
+  }
+  window.autolotTrack = trackEvent; // exposed so other scripts/inline handlers can fire events
+
+  var cookieBanner = document.getElementById("cookieBanner");
+  var consent = null;
+  try { consent = localStorage.getItem(CONSENT_KEY); } catch (e) { /* storage blocked — treat as no consent recorded */ }
+
+  if (consent === "accepted") {
+    loadAnalytics();
+  } else if (consent !== "declined" && cookieBanner) {
+    cookieBanner.classList.add("open");
+  }
+
+  var acceptBtn = document.getElementById("cookieAccept");
+  var declineBtn = document.getElementById("cookieDecline");
+  if (acceptBtn) {
+    acceptBtn.addEventListener("click", function () {
+      try { localStorage.setItem(CONSENT_KEY, "accepted"); } catch (e) {}
+      cookieBanner.classList.remove("open");
+      loadAnalytics();
+    });
+  }
+  if (declineBtn) {
+    declineBtn.addEventListener("click", function () {
+      try { localStorage.setItem(CONSENT_KEY, "declined"); } catch (e) {}
+      cookieBanner.classList.remove("open");
+    });
+  }
+
+  /* ---------- conversion tracking: clicks on key actions ---------- */
+  document.querySelectorAll("[data-wa-button]").forEach(function (btn) {
+    btn.addEventListener("click", function () { trackEvent("whatsapp_click", {}); });
+  });
+  document.querySelectorAll('a[href^="tel:"]').forEach(function (el) {
+    el.addEventListener("click", function () { trackEvent("phone_click", {}); });
+  });
+  document.querySelectorAll('a[href^="mailto:"]').forEach(function (el) {
+    el.addEventListener("click", function () { trackEvent("email_click", {}); });
+  });
+  var checkoutForm = document.getElementById("checkout-form");
+  if (checkoutForm) {
+    checkoutForm.addEventListener("submit", function () { trackEvent("checkout_submit", {}); });
+  }
 });

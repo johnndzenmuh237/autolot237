@@ -24,12 +24,15 @@
   "name": "{{ business_name }}",
   "url": "{{ site_url }}",
   "telephone": "{{ '+' ~ whatsapp_number if whatsapp_number else '' }}",
-  "address": { "@type": "PostalAddress", "addressLocality": "Douala", "addressCountry": "CM" }
+  "email": "{{ business_email }}",
+  "priceRange": "CFA",
+  "address": { "@type": "PostalAddress", "addressLocality": "Douala", "addressRegion": "Littoral", "addressCountry": "CM" }
 }
 </script>
 {% endblock %}
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/store.css') }}">
 {% block extra_css %}{% endblock %}
@@ -54,6 +57,7 @@
       <a href="{{ url_for('store.browse') }}" class="{{ 'active' if request.endpoint == 'store.browse' }}">Browse Cars</a>
       <a href="{{ url_for('store.browse') }}?condition=new">New Arrivals</a>
       <a href="{{ url_for('store.about') }}" class="{{ 'active' if request.endpoint == 'store.about' }}">About Us</a>
+      <a href="{{ url_for('store.reviews') }}" class="{{ 'active' if request.endpoint == 'store.reviews' }}">Reviews</a>
       <a href="{{ url_for('store.home') }}#how-it-works">How It Works</a>
       <a href="{{ url_for('store.home') }}#contact">Contact</a>
     </nav>
@@ -102,6 +106,7 @@
     <div>
       <h4>Company</h4>
       <a href="{{ url_for('store.about') }}">About Us</a>
+      <a href="{{ url_for('store.reviews') }}">Reviews</a>
       <a href="{{ url_for('account.dashboard') if logged_in_customer else url_for('account.login') }}">Track My Orders</a>
       <a href="{{ url_for('store.home') }}#how-it-works">How It Works</a>
       <a href="{{ url_for('auth.staff_portal') }}">Staff Login</a>
@@ -109,11 +114,18 @@
     <div>
       <h4>Talk to Us</h4>
       <a href="#" data-wa-button data-car-slug="">WhatsApp Sales</a>
-      <a href="mailto:{{ business_email }}">Email Us</a>
+      {% if business_phone %}<a href="tel:{{ business_phone|replace(' ', '') }}">{{ business_phone }}</a>{% endif %}
+      <a href="mailto:{{ business_email }}">{{ business_email }}</a>
     </div>
   </div>
   <div class="wrap footer-bottom">
     <span>&copy; {{ current_year }} {{ business_name }}. All rights reserved.</span>
+    <span style="display:flex; gap:16px; flex-wrap:wrap;">
+      <a href="{{ url_for('store.legal_privacy') }}">Privacy Policy</a>
+      <a href="{{ url_for('store.legal_terms') }}">Terms &amp; Conditions</a>
+      <a href="{{ url_for('store.legal_refund') }}">Refund Policy</a>
+      <a href="{{ url_for('store.legal_cookies') }}">Cookies Policy</a>
+    </span>
     <span>Powered by LedgerIQ Business Management</span>
   </div>
 </footer>
@@ -132,6 +144,19 @@
   </form>
 </div>
 
+<div class="cookie-banner" id="cookieBanner" role="dialog" aria-label="Cookie consent">
+  <p>We use essential cookies to run this site (cart, login, security). With your permission we'd also like to use analytics cookies to see which pages are useful — see our <a href="{{ url_for('store.legal_cookies') }}">Cookies Policy</a>.</p>
+  <div class="actions">
+    <button class="btn btn-outline-light btn-sm" id="cookieDecline" type="button">Essential Only</button>
+    <button class="btn btn-primary btn-sm" id="cookieAccept" type="button">Accept All</button>
+  </div>
+</div>
+
+{% if ga_measurement_id %}
+<script>
+  window.AUTOLOT_GA_ID = "{{ ga_measurement_id }}";
+</script>
+{% endif %}
 <script src="{{ url_for('static', filename='js/store.js') }}"></script>
 {% block extra_js %}{% endblock %}
 </body>

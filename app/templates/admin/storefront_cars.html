@@ -31,6 +31,7 @@
           <td class="num">
             <a href="{{ url_for('store_admin.edit_car', listing_id=l.id) }}" class="btn btn-secondary btn-sm">Edit</a>
             <form method="post" action="{{ url_for('store_admin.unpublish_car', listing_id=l.id) }}" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn btn-secondary btn-sm" type="submit">{{ 'Hide' if l.is_published else 'Publish' }}</button>
             </form>
           </td>

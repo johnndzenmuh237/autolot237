@@ -1,0 +1,37 @@
+{% extends "store/base.html" %}
+{% block title %}Cookies Policy — {{ business_name }}{% endblock %}
+{% block meta_description %}What cookies {{ business_name }} uses, why, and how to control them.{% endblock %}
+
+{% block content %}
+{% set page_title = "Cookies Policy" %}
+{% set breadcrumbs = [{"label": "Cookies Policy"}] %}
+{% include "store/components/page_header.html" %}
+
+<section class="section">
+  <div class="wrap" style="max-width:760px;">
+    <p><em>Last updated: {{ current_year }}.</em></p>
+
+    <h2>1. What cookies we use</h2>
+    <table class="spec-table">
+      <tr><td><strong>Essential (always on)</strong></td><td>Keeps you logged in, remembers your shopping cart, and protects forms from cross-site attacks. The site can't function without these.</td></tr>
+      <tr><td><strong>Analytics (optional)</strong></td><td>Helps us understand which pages are useful, only active if you accept it below.</td></tr>
+    </table>
+
+    <h2>2. Your choice</h2>
+    <p>When you first visit, a banner lets you accept or decline optional analytics cookies. Essential cookies can't be declined individually, since the site relies on them to work — but you can clear all cookies at any time through your browser settings, which will simply log you out and empty your cart.</p>
+
+    <h2>3. Third parties</h2>
+    <p>If enabled, our analytics provider (Google Analytics) may set its own cookies to measure site usage in aggregate. We don't use cookies for third-party advertising or retargeting.</p>
+
+    <h2>4. Managing cookies in your browser</h2>
+    <p>Most browsers let you view, delete, and block cookies through their settings menu. Blocking essential cookies will prevent checkout and account login from working correctly.</p>
+
+    <h2>5. Contact</h2>
+    <p>Questions about this policy can be sent to <a href="mailto:{{ business_email }}">{{ business_email }}</a>.</p>
+
+    <p style="margin-top:40px; padding:16px; background:var(--clr-bg-alt); border-radius:var(--radius-md); font-size:.85rem; color:var(--clr-text-muted);">
+      This page reflects the cookies actually set by this website's code as of the date above. If you add new tracking tools later, update this list to match.
+    </p>
+  </div>
+</section>
+{% endblock %}

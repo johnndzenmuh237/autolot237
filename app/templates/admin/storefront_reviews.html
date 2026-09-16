@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block title %}Customer Reviews{% endblock %}
+
+{% block content %}
+<div class="section-head" style="margin-top:0;">
+  <h2>Customer Reviews</h2>
+  <div class="page-actions">
+    <a href="{{ url_for('store.reviews') }}" target="_blank" class="btn btn-secondary">View Public Page</a>
+  </div>
+</div>
+
+<div class="category-filter">
+  <a href="{{ url_for('store_admin.reviews') }}" class="category-chip {{ 'active' if not status }}">All</a>
+  {% for s in ['pending', 'approved', 'rejected'] %}
+    <a href="{{ url_for('store_admin.reviews', status=s) }}" class="category-chip {{ 'active' if status == s }}">{{ s|title }}</a>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Reviewer</th><th>Rating</th><th>Comment</th><th>Status</th><th>Submitted</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for r in reviews %}
+        <tr>
+          <td>{{ r.reviewer_name }}{% if r.is_featured %} <span class="stock-pill stock-ok">Featured</span>{% endif %}<br><span class="product-sku">{{ r.email or '' }}</span></td>
+          <td>{{ '★' * r.rating }}{{ '☆' * (5 - r.rating) }}</td>
+          <td style="max-width:320px;">{{ r.comment[:180] }}</td>
+          <td><span class="stock-pill {{ 'stock-ok' if r.status == 'approved' else ('stock-low' if r.status == 'rejected' else '') }}">{{ r.status|title }}</span></td>
+          <td>{{ r.created_at.strftime('%d %b %Y') }}</td>
+          <td class="num" style="white-space:nowrap;">
+            {% if r.status != 'approved' %}
+            <form method="post" action="{{ url_for('store_admin.review_status', review_id=r.id) }}" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="status" value="approved">
+              <button class="btn btn-primary btn-sm" type="submit">Approve</button>
+            </form>
+            {% endif %}
+            {% if r.status != 'rejected' %}
+            <form method="post" action="{{ url_for('store_admin.review_status', review_id=r.id) }}" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <input type="hidden" name="status" value="rejected">
+              <button class="btn btn-secondary btn-sm" type="submit">Reject</button>
+            </form>
+            {% endif %}
+            <form method="post" action="{{ url_for('store_admin.review_feature', review_id=r.id) }}" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-secondary btn-sm" type="submit">{{ 'Unfeature' if r.is_featured else 'Feature' }}</button>
+            </form>
+            <a href="{{ url_for('store_admin.review_edit', review_id=r.id) }}" class="btn btn-secondary btn-sm">Edit</a>
+            <form method="post" action="{{ url_for('store_admin.review_delete', review_id=r.id) }}" style="display:inline;" onsubmit="return confirm('Delete this review permanently?');">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-secondary btn-sm" type="submit">Delete</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6"><div class="empty-state"><p>No reviews submitted yet.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -47,10 +47,68 @@
     <h2>Visit the showroom, or reach us online</h2>
     <p>{{ business_name }} is based in {{ business_address }}. Come see a car in person, or start
       the whole thing from your phone — browse, chat, and check out without ever leaving home.</p>
+    <p>Call us at <a href="tel:{{ '+' ~ whatsapp_number if whatsapp_number else '' }}">{{ business_phone }}</a> or email <a href="mailto:{{ business_email }}">{{ business_email }}</a>.</p>
     <div class="hero-actions">
       <a class="btn btn-primary" href="{{ url_for('store.browse') }}">Browse the Lot</a>
       <a class="btn btn-outline" href="#" data-wa-button data-car-slug="">Chat on WhatsApp</a>
     </div>
   </div>
 </section>
+
+<section class="section">
+  <div class="wrap" style="max-width:760px;">
+    <span class="eyebrow">Common Questions</span>
+    <h2>Frequently asked questions</h2>
+    <div style="margin-top:20px;">
+      <div style="border-bottom:1px solid var(--clr-border); padding:18px 0;">
+        <h3 style="margin-bottom:6px;">Can I buy a car online without visiting the showroom first?</h3>
+        <p>Yes. Every listing has full specs and real photos, and you can chat with our AI assistant or on WhatsApp with any questions. You can pay online and arrange delivery, or reserve a car online and pay when you pick it up in person.</p>
+      </div>
+      <div style="border-bottom:1px solid var(--clr-border); padding:18px 0;">
+        <h3 style="margin-bottom:6px;">Do you accept payment in installments or as a deposit?</h3>
+        <p>Yes. At checkout you can pay the full amount, pay a partial deposit and settle the remaining balance later, or choose to pay on delivery. Your remaining balance is always visible in your order and account.</p>
+      </div>
+      <div style="border-bottom:1px solid var(--clr-border); padding:18px 0;">
+        <h3 style="margin-bottom:6px;">Is every car inspected before it's listed?</h3>
+        <p>Yes, every vehicle is mechanically checked before it goes up for sale, and used cars carry a 30-day mechanical warranty from handover.</p>
+      </div>
+      <div style="border-bottom:1px solid var(--clr-border); padding:18px 0;">
+        <h3 style="margin-bottom:6px;">What payment methods do you accept?</h3>
+        <p>We accept Mobile Money (MTN and Orange), bank transfer, and cash at the showroom.</p>
+      </div>
+      <div style="border-bottom:1px solid var(--clr-border); padding:18px 0;">
+        <h3 style="margin-bottom:6px;">Can I get a refund if I change my mind?</h3>
+        <p>If you haven't paid yet, you can cancel your order at no cost. If you've paid a deposit or in full before handover, contact us and we'll handle it case by case — see our <a href="{{ url_for('store.legal_refund') }}">Refund Policy</a> for full details.</p>
+      </div>
+      <div style="padding:18px 0;">
+        <h3 style="margin-bottom:6px;">Do you deliver cars outside Douala?</h3>
+        <p>Yes — choose delivery at checkout and provide your address and city; our team will confirm delivery details and any distance-based arrangements with you directly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block structured_data %}
+{{ super() }}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "Can I buy a car online without visiting the showroom first?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Yes. Every listing has full specs and real photos, and you can chat with our AI assistant or on WhatsApp with any questions. You can pay online and arrange delivery, or reserve a car online and pay when you pick it up in person."}},
+    {"@type": "Question", "name": "Do you accept payment in installments or as a deposit?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Yes. At checkout you can pay the full amount, pay a partial deposit and settle the remaining balance later, or choose to pay on delivery. Your remaining balance is always visible in your order and account."}},
+    {"@type": "Question", "name": "Is every car inspected before it's listed?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Yes, every vehicle is mechanically checked before it goes up for sale, and used cars carry a 30-day mechanical warranty from handover."}},
+    {"@type": "Question", "name": "What payment methods do you accept?",
+     "acceptedAnswer": {"@type": "Answer", "text": "We accept Mobile Money (MTN and Orange), bank transfer, and cash at the showroom."}},
+    {"@type": "Question", "name": "Can I get a refund if I change my mind?",
+     "acceptedAnswer": {"@type": "Answer", "text": "If you haven't paid yet, you can cancel your order at no cost. If you've paid a deposit or in full before handover, contact us and we'll handle it case by case — see our Refund Policy for full details."}},
+    {"@type": "Question", "name": "Do you deliver cars outside Douala?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Yes — choose delivery at checkout and provide your address and city; our team will confirm delivery details and any distance-based arrangements with you directly."}}
+  ]
+}
+</script>
 {% endblock %}

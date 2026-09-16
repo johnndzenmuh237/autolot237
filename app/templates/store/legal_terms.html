@@ -1,0 +1,46 @@
+{% extends "store/base.html" %}
+{% block title %}Terms & Conditions — {{ business_name }}{% endblock %}
+{% block meta_description %}The terms that apply when you browse, order, or buy a vehicle through {{ business_name }}.{% endblock %}
+
+{% block content %}
+{% set page_title = "Terms & Conditions" %}
+{% set breadcrumbs = [{"label": "Terms & Conditions"}] %}
+{% include "store/components/page_header.html" %}
+
+<section class="section">
+  <div class="wrap" style="max-width:760px;">
+    <p><em>Last updated: {{ current_year }}. By browsing this website or placing an order, you agree to these terms.</em></p>
+
+    <h2>1. Vehicle listings</h2>
+    <p>Every vehicle listed is inspected before publication, and the price shown is the full price — no hidden fees are added at checkout. Mileage, year, and specification details are provided by our team to the best of our knowledge at the time of listing. Photos are of the actual vehicle where possible.</p>
+
+    <h2>2. Placing an order</h2>
+    <p>Placing an order online reserves that vehicle for you — it will not be sold to anyone else while your order is active. You choose at checkout whether to pay online now (in full or as a deposit) or pay when the vehicle is delivered or collected.</p>
+
+    <h2>3. Payment</h2>
+    <p>We accept Mobile Money, bank transfer, and cash. Online "Pay Now" payments are self-reported by the buyer and reconciled by our staff — if a payment doesn't match what we've received, we'll contact you before proceeding. A partial (deposit) payment leaves a clear remaining balance, visible in your order confirmation and account.</p>
+
+    <h2>4. Cancellations</h2>
+    <p>An order that hasn't been paid or fulfilled yet can be cancelled — contact our team and the reserved vehicle will be released back onto the lot. See our <a href="{{ url_for('store.legal_refund') }}">Refund Policy</a> for cancellations after payment.</p>
+
+    <h2>5. Vehicle handover</h2>
+    <p>Vehicles are handed over once payment terms have been met (full payment, or an agreed deposit arrangement for delivery/pay-on-delivery orders). We'll confirm the handover date and location with you directly.</p>
+
+    <h2>6. Warranty</h2>
+    <p>Used vehicles carry a 30-day mechanical warranty from the date of handover unless stated otherwise on the listing. New vehicles carry the manufacturer's warranty. The warranty covers mechanical faults present at the time of sale — it does not cover damage from an accident, misuse, or normal wear after handover.</p>
+
+    <h2>7. Limitation of liability</h2>
+    <p>We aim for every listing to be accurate, but we are not liable for minor discrepancies between a listing and the vehicle's exact condition that a reasonable pre-purchase inspection would catch. We encourage every buyer to inspect or test-drive a vehicle before finalizing payment where practical.</p>
+
+    <h2>8. Changes to these terms</h2>
+    <p>We may update these terms from time to time; the "last updated" date above reflects the most recent change.</p>
+
+    <h2>9. Contact</h2>
+    <p>Questions about these terms can be sent to <a href="mailto:{{ business_email }}">{{ business_email }}</a>.</p>
+
+    <p style="margin-top:40px; padding:16px; background:var(--clr-bg-alt); border-radius:var(--radius-md); font-size:.85rem; color:var(--clr-text-muted);">
+      This page is a general-purpose terms template. Before launch, it should be reviewed by a qualified legal professional against Cameroon's consumer protection and vehicle sales regulations, and updated with your business's actual registration details.
+    </p>
+  </div>
+</section>
+{% endblock %}

@@ -19,6 +19,7 @@
             </div>
             <div class="car-card-price" style="padding-top:0;">{{ "{:,.0f}".format(car.price) }} CFA</div>
             <form method="post" action="{{ url_for('store.cart_remove', listing_id=car.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
               <button class="btn btn-outline btn-sm" type="submit">Remove</button>
             </form>
           </div>

@@ -1,0 +1,13 @@
+<section class="page-header" style="--page-header-image: url('{{ page_header_image|default('https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=1600&q=70') }}');">
+  <div class="wrap">
+    <nav class="breadcrumbs" aria-label="Breadcrumb">
+      <a href="{{ url_for('store.home') }}">Home</a>
+      {% for crumb in breadcrumbs|default([]) %}
+        <span>/</span>
+        {% if crumb.url %}<a href="{{ crumb.url }}">{{ crumb.label }}</a>{% else %}<span aria-current="page">{{ crumb.label }}</span>{% endif %}
+      {% endfor %}
+    </nav>
+    <h1>{{ page_title }}</h1>
+    {% if page_subtitle %}<p>{{ page_subtitle }}</p>{% endif %}
+  </div>
+</section>

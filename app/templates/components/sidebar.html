@@ -56,6 +56,7 @@
         <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.cars' }}" href="{{ url_for('store_admin.cars') }}">Car Listings</a>
         <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.orders' }}" href="{{ url_for('store_admin.orders') }}">Website Orders</a>
         <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.leads' }}" href="{{ url_for('store_admin.leads') }}">Leads (WhatsApp / AI Chat)</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.reviews' }}" href="{{ url_for('store_admin.reviews') }}">Customer Reviews</a>
         <a class="nav-link" href="{{ url_for('store.home') }}" target="_blank" rel="noopener">View Live Site &#8599;</a>
       </div>
     {% else %}

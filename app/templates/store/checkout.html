@@ -6,6 +6,7 @@
     <h1>Checkout</h1>
     <div class="detail-layout" style="grid-template-columns: 1.6fr 1fr;">
       <form method="post" id="checkout-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <h3>Your details</h3>
         <div class="form-grid">
           <div class="form-field"><label>Full name</label><input type="text" name="full_name" required></div>

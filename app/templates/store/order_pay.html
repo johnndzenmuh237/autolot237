@@ -20,7 +20,7 @@
     <div class="pay-methods">
       <div class="pay-method">
         <strong>Mobile Money (MTN / Orange)</strong>
-        <p style="margin:6px 0 0;">Send to <span class="figure">{{ whatsapp_number or business_phone }}</span> — use your order number <strong>{{ order.order_number }}</strong> as the payment reference.</p>
+        <p style="margin:6px 0 0;">Send to <a href="tel:{{ '+' ~ whatsapp_number if whatsapp_number else '' }}" class="figure">{{ whatsapp_number or business_phone }}</a> — use your order number <strong>{{ order.order_number }}</strong> as the payment reference.</p>
       </div>
       <div class="pay-method">
         <strong>Bank Transfer</strong>
@@ -30,6 +30,7 @@
 
     <h3>Once you've sent payment</h3>
     <form method="post" action="{{ url_for('store.order_confirm_payment', order_number=order.order_number) }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <div class="pay-amount-btns">
         <button type="button" class="btn btn-primary" onclick="setAmount({{ order.balance_due }})">Pay Full Balance ({{ "{:,.0f}".format(order.balance_due) }} CFA)</button>
         <button type="button" class="btn btn-outline" onclick="setAmount({{ (order.balance_due / 2)|round(0) }})">Pay Half Now</button>

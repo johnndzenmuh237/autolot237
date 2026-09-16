@@ -219,3 +219,76 @@ def unpublish_car(listing_id):
     listing.is_published = not listing.is_published
     db.session.commit()
     return redirect(url_for("store_admin.cars"))
+
+
+# --------------------------------------------------------------- reviews ---
+# Admin-only — customer reviews are never auto-published; every one is
+# approved, rejected, edited, deleted, or featured by a human first.
+
+@store_admin_bp.route("/reviews")
+@login_required
+@admin_required
+def reviews():
+    from app.models.review import Review
+    status = request.args.get("status", "")
+    q = Review.query.order_by(Review.created_at.desc())
+    if status:
+        q = q.filter_by(status=status)
+    return render_template("admin/storefront_reviews.html", reviews=q.all(), status=status)
+
+
+@store_admin_bp.route("/reviews/<int:review_id>/status", methods=["POST"])
+@login_required
+@admin_required
+def review_status(review_id):
+    from app.models.review import Review
+    from datetime import datetime
+    review = Review.query.get_or_404(review_id)
+    new_status = request.form.get("status")
+    if new_status in ("approved", "rejected", "pending"):
+        review.status = new_status
+        review.moderated_at = datetime.utcnow()
+        db.session.commit()
+        flash(f"Review by {review.reviewer_name} marked as {new_status}.", "success")
+    return redirect(url_for("store_admin.reviews"))
+
+
+@store_admin_bp.route("/reviews/<int:review_id>/feature", methods=["POST"])
+@login_required
+@admin_required
+def review_feature(review_id):
+    from app.models.review import Review
+    review = Review.query.get_or_404(review_id)
+    review.is_featured = not review.is_featured
+    db.session.commit()
+    return redirect(url_for("store_admin.reviews"))
+
+
+@store_admin_bp.route("/reviews/<int:review_id>/edit", methods=["GET", "POST"])
+@login_required
+@admin_required
+def review_edit(review_id):
+    from app.models.review import Review
+    review = Review.query.get_or_404(review_id)
+    if request.method == "POST":
+        review.reviewer_name = request.form.get("reviewer_name", review.reviewer_name).strip()
+        review.comment = request.form.get("comment", review.comment).strip()
+        rating = request.form.get("rating", type=int)
+        if rating and 1 <= rating <= 5:
+            review.rating = rating
+        db.session.commit()
+        flash("Review updated.", "success")
+        return redirect(url_for("store_admin.reviews"))
+    return render_template("admin/storefront_review_edit.html", review=review)
+
+
+@store_admin_bp.route("/reviews/<int:review_id>/delete", methods=["POST"])
+@login_required
+@admin_required
+def review_delete(review_id):
+    from app.models.review import Review
+    review = Review.query.get_or_404(review_id)
+    db.session.delete(review)
+    db.session.commit()
+    flash("Review deleted.", "success")
+    return redirect(url_for("store_admin.reviews"))

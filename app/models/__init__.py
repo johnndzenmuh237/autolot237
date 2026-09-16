@@ -8,8 +8,9 @@ from app.models.salary_payment import SalaryPayment
 from app.models.car import CarListing
 from app.models.order import Customer, Order, OrderItem, PaymentRecord
 from app.models.lead import Lead
+from app.models.review import Review
 
 __all__ = [
     "User", "Product", "Sale", "InventoryPurchase", "Expense", "AIInsight", "SalaryPayment",
-    "CarListing", "Customer", "Order", "OrderItem", "PaymentRecord", "Lead",
+    "CarListing", "Customer", "Order", "OrderItem", "PaymentRecord", "Lead", "Review",
 ]
