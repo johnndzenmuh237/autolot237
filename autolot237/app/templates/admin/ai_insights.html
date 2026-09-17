@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% set page_title = "AI Business Insights" %}
+{% set page_subtitle = "Plain-language analysis of your sales, stock, and profit" %}
+{% block title %}AI Insights{% endblock %}
+
+{% block content %}
+<div class="section-head" style="margin-top:0;">
+  <h2>Latest Insights</h2>
+  <form id="refreshInsightsForm" method="POST" action="{{ url_for('ai.refresh_insights') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-primary">Refresh Analysis</button>
+  </form>
+</div>
+
+{% if insights %}
+<div class="grid grid-2">
+  {% for i in insights %}
+    <div class="card">
+      <div class="insight-row insight-{{ i.level }}">
+        <span class="insight-dot"></span>
+        <div>
+          <div class="insight-title">
+            {% if i.level == 'good' %}🟢{% elif i.level == 'warning' %}🟡{% else %}🔴{% endif %}
+            {{ i.title }}
+          </div>
+          <p class="insight-message">{{ i.message }}</p>
+          <p class="form-hint" style="margin-top:8px;">{{ i.created_at.strftime('%b %d, %Y %H:%M') }} · {{ i.category|capitalize if i.category else 'General' }}</p>
+        </div>
+      </div>
+    </div>
+  {% endfor %}
+</div>
+{% else %}
+<div class="card">
+  <div class="empty-state">
+    <p>No insights yet. Generate your first business analysis.</p>
+    <button type="submit" form="refreshInsightsForm" class="btn btn-primary btn-sm">Generate insights</button>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

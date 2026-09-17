@@ -1,0 +1,20 @@
+.sale-form-card { max-width: 520px; }
+.sale-preview {
+  background: var(--surface-alt);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin: 16px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  font-size: 0.85rem;
+}
+.sale-preview-item .label { color: var(--ink-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.sale-preview-item .value { font-family: var(--font-mono); font-weight: 600; margin-top: 2px; }
+.sale-preview-item.range .value { color: var(--info); }
+.sale-preview-item.stock .value { color: var(--accent-dark); }
+
+.price-boundary-note { font-size: 0.78rem; color: var(--ink-muted); margin-top: 4px; }
+
+.sale-row-product { font-weight: 600; }
+.sale-row-seller { font-size: 0.78rem; color: var(--ink-muted); }

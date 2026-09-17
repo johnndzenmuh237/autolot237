@@ -1,0 +1,24 @@
+.period-tabs { display: flex; gap: 6px; margin-bottom: 22px; }
+.period-tab {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 0.84rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.period-tab.active { background: var(--sidebar-bg); color: #fff; border-color: var(--sidebar-bg); }
+
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 9px 0;
+  border-bottom: 1px solid var(--border);
+}
+.breakdown-row:last-child { border-bottom: none; }
+.breakdown-bar-track { flex: 1; height: 6px; background: var(--surface-alt); border-radius: 3px; overflow: hidden; }
+.breakdown-bar-fill { height: 100%; background: var(--accent); border-radius: 3px; }
+.breakdown-label { width: 130px; font-size: 0.83rem; font-weight: 600; }
+.breakdown-value { width: 110px; text-align: right; font-family: var(--font-mono); font-size: 0.82rem; }

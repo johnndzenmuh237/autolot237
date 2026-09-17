@@ -1,0 +1,70 @@
+{% extends "store/base.html" %}
+{% block title %}Customer Reviews — {{ business_name }}{% endblock %}
+{% block meta_description %}Real reviews from {{ business_name }} customers — every review is submitted by a real buyer and moderated before it's published.{% endblock %}
+
+{% block content %}
+{% set page_title = "Customer Reviews" %}
+{% set page_subtitle = "Real feedback from real buyers — every review is moderated before it's published." %}
+{% set breadcrumbs = [{"label": "Reviews"}] %}
+{% include "store/components/page_header.html" %}
+<section class="section" style="padding-top:44px;">
+  <div class="wrap" style="max-width:820px;">
+    {% if avg_rating %}
+      <div style="display:flex; align-items:center; gap:14px; margin-bottom:8px;">
+        <span style="font-family:var(--font-mono); font-size:2rem; font-weight:700; color:var(--clr-primary);">{{ avg_rating }}<span style="font-size:1rem; color:var(--clr-text-muted);">/5</span></span>
+        <div>
+          <div aria-label="{{ avg_rating }} out of 5 stars">{% for i in range(1,6) %}{{ '★' if i <= avg_rating|round(0,'floor') else '☆' }}{% endfor %}</div>
+          <span style="font-size:.82rem; color:var(--clr-text-muted);">Based on {{ review_count }} approved review{{ 's' if review_count != 1 }}</span>
+        </div>
+      </div>
+    {% else %}
+      <p>No reviews yet — <strong>be the first to leave a review.</strong> Every review here comes from a real customer and is checked before it's published; we never publish fabricated ratings.</p>
+    {% endif %}
+
+    <div style="margin:30px 0;">
+      {% for r in approved_reviews %}
+      <div style="border:1px solid var(--clr-border); border-radius:var(--radius-lg); padding:20px; margin-bottom:14px; background:var(--clr-panel);">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <strong>{{ r.reviewer_name }}</strong>
+          <span style="color:var(--clr-star, #f59e0b);" aria-label="{{ r.rating }} out of 5 stars">{% for i in range(1,6) %}{{ '★' if i <= r.rating else '☆' }}{% endfor %}</span>
+        </div>
+        <p style="margin:0;">{{ r.comment }}</p>
+        <span style="font-size:.76rem; color:var(--clr-text-light);">{{ r.created_at.strftime('%B %Y') }}</span>
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="summary-box" id="write-review">
+      <h2 style="margin-bottom:6px;">Write a Review</h2>
+      <p>Bought a car with us? Tell other buyers about your experience. Reviews are checked by our team before they go live.</p>
+      <form method="POST" action="{{ url_for('store.reviews') }}#write-review">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <!-- Honeypot: real visitors never see or fill this field. -->
+        <div style="position:absolute; left:-9999px;" aria-hidden="true">
+          <label for="website_hp">Leave this field empty</label>
+          <input type="text" id="website_hp" name="website_hp" tabindex="-1" autocomplete="off">
+        </div>
+
+        <div class="form-grid">
+          <div class="form-field"><label for="reviewer_name">Your Name</label><input type="text" id="reviewer_name" name="reviewer_name" required></div>
+          <div class="form-field"><label for="email">Email (optional, kept private)</label><input type="email" id="email" name="email"></div>
+        </div>
+
+        <div class="form-field">
+          <label>Rating</label>
+          <div class="star-input" role="radiogroup" aria-label="Star rating">
+            {% for i in range(5,0,-1) %}
+            <input type="radio" name="rating" id="star{{ i }}" value="{{ i }}" required>
+            <label for="star{{ i }}" aria-label="{{ i }} stars">★</label>
+            {% endfor %}
+          </div>
+        </div>
+
+        <div class="form-field"><label for="comment">Your Review</label><textarea id="comment" name="comment" required minlength="10" placeholder="Tell us about the car, the process, and the service..."></textarea></div>
+
+        <button class="btn btn-primary" type="submit">Submit Review</button>
+      </form>
+    </div>
+  </div>
+</section>
+{% endblock %}

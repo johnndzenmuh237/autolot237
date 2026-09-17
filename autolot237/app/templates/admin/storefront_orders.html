@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Website Orders{% endblock %}
+
+{% block content %}
+<div class="section-head" style="margin-top:0;">
+  <h2>Website Orders</h2>
+  <div class="page-actions">
+    <a href="{{ url_for('store.home') }}" target="_blank" class="btn btn-secondary">View Live Site</a>
+  </div>
+</div>
+
+<div class="category-filter">
+  <a href="{{ url_for('store_admin.orders') }}" class="category-chip {{ 'active' if not status }}">All</a>
+  {% for s in ['ordered', 'partial', 'paid', 'fulfilled', 'cancelled'] %}
+    <a href="{{ url_for('store_admin.orders', status=s) }}" class="category-chip {{ 'active' if status == s }}">{{ s|title }}</a>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Order #</th>
+          <th>Customer &amp; Contact</th>
+          <th>Vehicle(s)</th>
+          <th>Fulfillment / Location</th>
+          <th class="num">Total</th>
+          <th class="num">Paid</th>
+          <th class="num">Balance</th>
+          <th>Status</th>
+          <th>Placed</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in orders %}
+        <tr>
+          <td>{{ o.order_number }}</td>
+          <td>{{ o.customer.full_name }}<br><span class="product-sku">{{ o.customer.phone }}{% if o.customer.email %} &middot; {{ o.customer.email }}{% endif %}</span></td>
+          <td>{% for item in o.items %}{{ item.car_listing.title }}{% if not loop.last %}, {% endif %}{% endfor %}</td>
+          <td>
+            {{ o.fulfillment_type|title }}
+            {% if o.fulfillment_type == 'delivery' %}<br><span class="product-sku">{{ o.shipping_address }}{% if o.shipping_city %}, {{ o.shipping_city }}{% endif %}</span>{% endif %}
+          </td>
+          <td class="num figure">{{ o.total_amount|currency }}</td>
+          <td class="num figure">{{ o.amount_paid|currency }}</td>
+          <td class="num figure">{{ o.balance_due|currency }}</td>
+          <td><span class="stock-pill {{ 'stock-ok' if o.status in ['paid','fulfilled'] else ('stock-low' if o.status == 'cancelled' else '') }}">{{ o.status_label }}</span></td>
+          <td>{{ o.created_at.strftime('%d %b %Y') }}</td>
+          <td class="num"><a href="{{ url_for('store_admin.order_detail', order_number=o.order_number) }}" class="btn btn-secondary btn-sm">View</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="10"><div class="empty-state"><p>No website orders yet.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+<article class="car-card">
+  <a class="car-card-img" href="{{ url_for('store.car_detail', slug=car.slug) }}">
+    <img src="{{ car.main_image or 'https://images.unsplash.com/photo-1493238792000-8113da705763?w=600&q=80' }}" alt="{{ car.title }} for sale in Douala" loading="lazy">
+    <div class="car-card-badges">
+      {% if car.condition == 'new' %}<span class="badge badge-new">New</span>{% endif %}
+      {% if car.is_featured %}<span class="badge badge-sale">Featured</span>{% endif %}
+    </div>
+  </a>
+  <div class="car-card-body">
+    <div class="car-card-cat">{{ car.listing_code }} &middot; {{ car.location or 'Douala' }}</div>
+    <h3 class="car-card-name"><a href="{{ url_for('store.car_detail', slug=car.slug) }}">{{ car.title }}</a></h3>
+    <div class="car-card-meta">
+      <span>{{ "{:,}".format(car.mileage_km) }} km</span>
+      <span>{{ car.transmission|capitalize }}</span>
+      <span>{{ car.fuel_type|capitalize }}</span>
+    </div>
+    <div class="car-card-price">{{ "{:,.0f}".format(car.price) }} CFA<small>{{ car.condition|capitalize }}</small></div>
+    <div class="car-card-actions">
+      <a class="btn btn-dark btn-sm btn-block" href="{{ url_for('store.car_detail', slug=car.slug) }}">View Details</a>
+    </div>
+  </div>
+</article>

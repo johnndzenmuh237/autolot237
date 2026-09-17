@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% set page_title = seller.full_name %}
+{% set page_subtitle = (seller.position or "Employee") + " · " + seller.tenure_label + " at the company" %}
+{% block title %}{{ seller.full_name }}{% endblock %}
+
+{% block content %}
+
+<div class="grid grid-2" style="align-items:start; margin-bottom:24px;">
+  <div class="card">
+    <div class="card-header"><h3>Employee Profile</h3></div>
+    <div style="display:flex; flex-direction:column; gap:10px; font-size:0.88rem;">
+      <div class="rank-row" style="border:none; padding:4px 0;">
+        <div class="rank-info"><div class="rank-name">Full Name</div></div>
+        <div>{{ seller.full_name }}</div>
+      </div>
+      <div class="rank-row" style="border:none; padding:4px 0;">
+        <div class="rank-info"><div class="rank-name">Username</div></div>
+        <div>@{{ seller.username }}</div>
+      </div>
+      <div class="rank-row" style="border:none; padding:4px 0;">
+        <div class="rank-info"><div class="rank-name">Phone</div></div>
+        <div>{{ seller.phone or "—" }}</div>
+      </div>
+      <div class="rank-row" style="border:none; padding:4px 0;">
+        <div class="rank-info"><div class="rank-name">Email</div></div>
+        <div>{{ seller.email or "—" }}</div>
+      </div>
+      <div class="rank-row" style="border:none; padding:4px 0;">
+        <div class="rank-info"><div class="rank-name">Address</div></div>
+        <div>{{ seller.address or "—" }}</div>
+      </div>
+      <div class="rank-row" style="border:none; padding:4px 0;">
+        <div class="rank-info"><div class="rank-name">National ID</div></div>
+        <div>{{ seller.national_id or "—" }}</div>
+      </div>
+      <div class="rank-row" style="border:none; padding:4px 0;">
+        <div class="rank-info"><div class="rank-name">Emergency Contact</div></div>
+        <div>
+          {% if seller.emergency_contact_name %}
+            {{ seller.emergency_contact_name }} — {{ seller.emergency_contact_phone or "no phone" }}
+          {% else %}—{% endif %}
+        </div>
+      </div>
+      {% if seller.notes %}
+      <div class="rank-row" style="border:none; padding:4px 0;">
+        <div class="rank-info"><div class="rank-name">Notes</div></div>
+        <div>{{ seller.notes }}</div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h3>Employment Details</h3></div>
+    <div style="display:flex; flex-direction:column; gap:10px; font-size:0.88rem;">
+      <div class="rank-row" style="border:none; padding:4px 0;">
+        <div class="rank-info"><div class="rank-name">Position</div></div>
+        <div>{{ seller.position or "—" }}</div>
+      </div>
+      <div class="rank-row" style="border:none; padding:4px 0;">
+        <div class="rank-info"><div class="rank-name">Hire Date</div></div>
+        <div>{{ seller.hire_date.strftime('%b %d, %Y') if seller.hire_date else "—" }}</div>
+      </div>
+      <div class="rank-row" style="border:none; padding:4px 0;">
+        <div class="rank-info"><div class="rank-name">Time Worked</div></div>
+        <div>{{ seller.tenure_label }}</div>
+      </div>
+      <div class="rank-row" style="border:none; padding:4px 0;">
+        <div class="rank-info"><div class="rank-name">Monthly Salary</div></div>
+        <div class="figure">{{ (seller.salary or 0)|currency }}</div>
+      </div>
+      <div class="rank-row" style="border:none; padding:4px 0;">
+        <div class="rank-info"><div class="rank-name">Account Status</div></div>
+        <div>
+          {% if seller.is_active_account %}
+            <span class="badge badge-good">Active</span>
+          {% else %}
+            <span class="badge badge-neutral">Inactive</span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="grid grid-3 stat-cards" style="margin-bottom:24px;">
+  <div class="stat-card">
+    <div class="stat-label">Today</div>
+    <div class="stat-value figure">{{ today.revenue|currency }}</div>
+    <div class="stat-sub">{{ today.items_sold }} items — {{ today.profit|currency }} profit</div>
+  </div>
+  <div class="stat-card stat-alt">
+    <div class="stat-label">This Week</div>
+    <div class="stat-value figure">{{ week.revenue|currency }}</div>
+    <div class="stat-sub">{{ week.items_sold }} items — {{ week.profit|currency }} profit</div>
+  </div>
+  <div class="stat-card stat-warn">
+    <div class="stat-label">This Month</div>
+    <div class="stat-value figure">{{ month.revenue|currency }}</div>
+    <div class="stat-sub">{{ month.items_sold }} items — {{ month.profit|currency }} profit</div>
+  </div>
+</div>
+
+<div class="section-head"><h2>Payroll History</h2></div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Month</th><th class="num">Amount</th><th>Status</th><th>Paid On</th><th></th></tr></thead>
+      <tbody>
+        {% for p in payments %}
+        <tr>
+          <td>{{ p.period }}</td>
+          <td class="num figure">{{ p.amount|currency }}</td>
+          <td>
+            {% if p.is_paid %}
+              <span class="badge badge-good">Paid</span>
+            {% else %}
+              <span class="badge badge-warn">Not Paid</span>
+            {% endif %}
+          </td>
+          <td>{{ p.paid_at.strftime('%b %d, %Y') if p.paid_at else "—" }}</td>
+          <td class="num">
+            <form method="POST" action="{{ url_for('admin.toggle_payment', user_id=seller.id, period=p.period) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button type="submit" class="btn {{ 'btn-secondary' if p.is_paid else 'btn-primary' }} btn-sm">
+                {{ 'Mark Unpaid' if p.is_paid else 'Mark Paid' }}
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5"><div class="empty-state"><p>No hire date on file — payroll history unavailable.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section-head"><h2>Recent Sales</h2></div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Product</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Total</th><th>Date</th></tr>
+      </thead>
+      <tbody>
+        {% for s in recent_sales %}
+        <tr>
+          <td>{{ s.product.name }}</td>
+          <td class="num figure">{{ s.quantity }}</td>
+          <td class="num figure">{{ s.selling_price|currency }}</td>
+          <td class="num figure">{{ s.total_amount|currency }}</td>
+          <td>{{ s.created_at.strftime('%b %d, %Y %H:%M') }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5"><div class="empty-state"><p>No sales recorded yet.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

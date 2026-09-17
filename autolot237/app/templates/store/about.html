@@ -1,0 +1,114 @@
+{% extends "store/base.html" %}
+{% block title %}About Us — {{ business_name }}{% endblock %}
+{% block meta_description %}Learn how {{ business_name }} inspects, prices, and sells verified cars online in Douala, Cameroon.{% endblock %}
+
+{% block content %}
+<section class="hp-hero" style="min-height:380px;">
+  <div class="hp-hero-left">
+    <span class="eyebrow">Our Story</span>
+    <h1>Built to make buying a car in Cameroon <em>easy to trust</em>.</h1>
+    <p class="lead">{{ business_name }} started with a simple frustration: buying a used car locally meant
+      guessing at condition, haggling over price, and hoping for the best. We built a lot — and a website —
+      where every car is inspected first and priced honestly.</p>
+  </div>
+  <div class="hp-hero-right">
+    <div class="hero-img-cell big"><img src="https://images.unsplash.com/photo-1449965408869-eaa3f722e40d?w=800&q=80" alt="Our showroom lot"></div>
+    <div class="hero-img-cell"><img src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=500&q=80" alt="Mechanic inspecting a car"></div>
+    <div class="hero-img-cell"><img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=500&q=80" alt="Car handover"></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap">
+    <div class="hero-stats" style="margin-top:0;">
+      <div><b style="color:var(--clr-primary);">300+</b><span>Cars sold since launch</span></div>
+      <div><b style="color:var(--clr-primary);">30-day</b><span>Mechanical warranty</span></div>
+      <div><b style="color:var(--clr-primary);">4.8/5</b><span>Average buyer rating</span></div>
+      <div><b style="color:var(--clr-primary);">Douala</b><span>Showroom &amp; delivery across Cameroon</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="wrap">
+    <div class="section-head"><div><span class="eyebrow">What we stand for</span><h2>How we're different</h2></div></div>
+    <div class="steps">
+      <div class="step-card"><div class="step-no">01</div><h3>Inspected first</h3><p>Every car is mechanically checked before it's ever listed — no surprises after handover.</p></div>
+      <div class="step-card"><div class="step-no">02</div><h3>One fair price</h3><p>No haggling. The price you see online is the price you pay, listed transparently.</p></div>
+      <div class="step-card"><div class="step-no">03</div><h3>Flexible payment</h3><p>Pay online in full, pay a deposit, or pay when your car arrives — your call.</p></div>
+      <div class="step-card"><div class="step-no">04</div><h3>Real support</h3><p>Reach a real person on WhatsApp or chat with our assistant, any time.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap" style="max-width:760px;">
+    <span class="eyebrow">Get in touch</span>
+    <h2>Visit the showroom, or reach us online</h2>
+    <p>{{ business_name }} is based in {{ business_address }}. Come see a car in person, or start
+      the whole thing from your phone — browse, chat, and check out without ever leaving home.</p>
+    <p>Call us at <a href="tel:{{ '+' ~ whatsapp_number if whatsapp_number else '' }}">{{ business_phone }}</a> or email <a href="mailto:{{ business_email }}">{{ business_email }}</a>.</p>
+    <div class="hero-actions">
+      <a class="btn btn-primary" href="{{ url_for('store.browse') }}">Browse the Lot</a>
+      <a class="btn btn-outline" href="#" data-wa-button data-car-slug="">Chat on WhatsApp</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="wrap" style="max-width:760px;">
+    <span class="eyebrow">Common Questions</span>
+    <h2>Frequently asked questions</h2>
+    <div style="margin-top:20px;">
+      <div style="border-bottom:1px solid var(--clr-border); padding:18px 0;">
+        <h3 style="margin-bottom:6px;">Can I buy a car online without visiting the showroom first?</h3>
+        <p>Yes. Every listing has full specs and real photos, and you can chat with our AI assistant or on WhatsApp with any questions. You can pay online and arrange delivery, or reserve a car online and pay when you pick it up in person.</p>
+      </div>
+      <div style="border-bottom:1px solid var(--clr-border); padding:18px 0;">
+        <h3 style="margin-bottom:6px;">Do you accept payment in installments or as a deposit?</h3>
+        <p>Yes. At checkout you can pay the full amount, pay a partial deposit and settle the remaining balance later, or choose to pay on delivery. Your remaining balance is always visible in your order and account.</p>
+      </div>
+      <div style="border-bottom:1px solid var(--clr-border); padding:18px 0;">
+        <h3 style="margin-bottom:6px;">Is every car inspected before it's listed?</h3>
+        <p>Yes, every vehicle is mechanically checked before it goes up for sale, and used cars carry a 30-day mechanical warranty from handover.</p>
+      </div>
+      <div style="border-bottom:1px solid var(--clr-border); padding:18px 0;">
+        <h3 style="margin-bottom:6px;">What payment methods do you accept?</h3>
+        <p>We accept Mobile Money (MTN and Orange), bank transfer, and cash at the showroom.</p>
+      </div>
+      <div style="border-bottom:1px solid var(--clr-border); padding:18px 0;">
+        <h3 style="margin-bottom:6px;">Can I get a refund if I change my mind?</h3>
+        <p>If you haven't paid yet, you can cancel your order at no cost. If you've paid a deposit or in full before handover, contact us and we'll handle it case by case — see our <a href="{{ url_for('store.legal_refund') }}">Refund Policy</a> for full details.</p>
+      </div>
+      <div style="padding:18px 0;">
+        <h3 style="margin-bottom:6px;">Do you deliver cars outside Douala?</h3>
+        <p>Yes — choose delivery at checkout and provide your address and city; our team will confirm delivery details and any distance-based arrangements with you directly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block structured_data %}
+{{ super() }}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {"@type": "Question", "name": "Can I buy a car online without visiting the showroom first?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Yes. Every listing has full specs and real photos, and you can chat with our AI assistant or on WhatsApp with any questions. You can pay online and arrange delivery, or reserve a car online and pay when you pick it up in person."}},
+    {"@type": "Question", "name": "Do you accept payment in installments or as a deposit?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Yes. At checkout you can pay the full amount, pay a partial deposit and settle the remaining balance later, or choose to pay on delivery. Your remaining balance is always visible in your order and account."}},
+    {"@type": "Question", "name": "Is every car inspected before it's listed?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Yes, every vehicle is mechanically checked before it goes up for sale, and used cars carry a 30-day mechanical warranty from handover."}},
+    {"@type": "Question", "name": "What payment methods do you accept?",
+     "acceptedAnswer": {"@type": "Answer", "text": "We accept Mobile Money (MTN and Orange), bank transfer, and cash at the showroom."}},
+    {"@type": "Question", "name": "Can I get a refund if I change my mind?",
+     "acceptedAnswer": {"@type": "Answer", "text": "If you haven't paid yet, you can cancel your order at no cost. If you've paid a deposit or in full before handover, contact us and we'll handle it case by case — see our Refund Policy for full details."}},
+    {"@type": "Question", "name": "Do you deliver cars outside Douala?",
+     "acceptedAnswer": {"@type": "Answer", "text": "Yes — choose delivery at checkout and provide your address and city; our team will confirm delivery details and any distance-based arrangements with you directly."}}
+  ]
+}
+</script>
+{% endblock %}

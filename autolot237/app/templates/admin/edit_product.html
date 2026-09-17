@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% set page_title = "Edit Product" %}
+{% set page_subtitle = product.name %}
+{% block title %}Edit Product{% endblock %}
+
+{% block content %}
+<div class="card" style="max-width: 620px;">
+  <form method="POST" action="{{ url_for('inventory.edit_product', product_id=product.id) }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="name">Product Name</label>
+        <input type="text" id="name" name="name" value="{{ product.name }}" required>
+      </div>
+      <div class="form-group">
+        <label for="category">Category</label>
+        <input type="text" id="category" name="category" value="{{ product.category }}" required>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="sku">SKU</label>
+        <input type="text" id="sku" name="sku" value="{{ product.sku or '' }}">
+      </div>
+      <div class="form-group">
+        <label>Current Stock</label>
+        <input type="text" value="{{ product.stock_quantity }}" disabled>
+        <p class="form-hint">Use Stock Updates to add new inventory.</p>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="cost_price">Purchase Cost (per unit)</label>
+        <input type="number" id="cost_price" name="cost_price" min="0" step="1" value="{{ product.cost_price }}" required>
+      </div>
+      <div class="form-group">
+        <label for="low_stock_threshold">Low Stock Threshold</label>
+        <input type="number" id="low_stock_threshold" name="low_stock_threshold" min="0" value="{{ product.low_stock_threshold }}" required>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group">
+        <label for="min_price">Minimum Selling Price</label>
+        <input type="number" id="min_price" name="min_price" min="0" step="1" value="{{ product.min_price }}" required>
+      </div>
+      <div class="form-group">
+        <label for="max_price">Maximum Selling Price</label>
+        <input type="number" id="max_price" name="max_price" min="0" step="1" value="{{ product.max_price }}" required>
+      </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <a href="{{ url_for('inventory.list_products') }}" class="btn btn-secondary">Cancel</a>
+  </form>
+
+  <div class="divider"></div>
+  <form method="POST" action="{{ url_for('inventory.deactivate_product', product_id=product.id) }}"
+        onsubmit="return confirm('Remove {{ product.name }} from active inventory?');">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <button type="submit" class="btn btn-danger btn-sm">Remove from Inventory</button>
+  </form>
+</div>
+{% endblock %}

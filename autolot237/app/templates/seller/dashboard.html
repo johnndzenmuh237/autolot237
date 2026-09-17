@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% set page_title = "My Dashboard" %}
+{% set page_subtitle = "Your sales at a glance" %}
+{% block title %}My Dashboard{% endblock %}
+
+{% block content %}
+<div class="grid grid-3 stat-cards">
+  <div class="stat-card">
+    <div class="stat-label">Sales Today</div>
+    <div class="stat-value figure">{{ today.revenue|currency }}</div>
+    <div class="stat-sub">{{ today.items_sold }} items sold</div>
+  </div>
+  <div class="stat-card stat-alt">
+    <div class="stat-label">Sales This Week</div>
+    <div class="stat-value figure">{{ week.revenue|currency }}</div>
+    <div class="stat-sub">{{ week.items_sold }} items sold</div>
+  </div>
+  <div class="stat-card stat-warn">
+    <div class="stat-label">Sales This Month</div>
+    <div class="stat-value figure">{{ month.revenue|currency }}</div>
+    <div class="stat-sub">{{ month.items_sold }} items sold</div>
+  </div>
+</div>
+
+<div class="section-head">
+  <h2>Recent Sales</h2>
+  <a href="{{ url_for('sales.record') }}" class="btn btn-primary">+ Record Sale</a>
+</div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Product</th><th class="num">Qty</th><th class="num">Price</th><th class="num">Total</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for s in recent_sales %}
+        <tr>
+          <td>{{ s.product.name }}</td>
+          <td class="num figure">{{ s.quantity }}</td>
+          <td class="num figure">{{ s.selling_price|currency }}</td>
+          <td class="num figure">{{ s.total_amount|currency }}</td>
+          <td>{{ s.created_at.strftime('%b %d, %H:%M') }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="5"><div class="empty-state"><p>No sales recorded yet. Record your first sale above.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

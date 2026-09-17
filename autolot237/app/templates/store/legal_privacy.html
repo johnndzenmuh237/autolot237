@@ -1,0 +1,48 @@
+{% extends "store/base.html" %}
+{% block title %}Privacy Policy — {{ business_name }}{% endblock %}
+{% block meta_description %}How {{ business_name }} collects, uses, and protects your personal information when you browse or buy a car on our website.{% endblock %}
+
+{% block content %}
+{% set page_title = "Privacy Policy" %}
+{% set breadcrumbs = [{"label": "Privacy Policy"}] %}
+{% include "store/components/page_header.html" %}
+
+<section class="section">
+  <div class="wrap" style="max-width:760px;">
+    <p><em>Last updated: {{ current_year }}. This policy explains what personal information {{ business_name }} collects, why, and how it's protected. It applies to this website and to information collected during in-person visits to our showroom.</em></p>
+
+    <h2>1. What we collect</h2>
+    <p>When you browse our site, we don't collect anything beyond standard technical logs. When you take an action — placing an order, submitting a test-drive request, chatting with us, or creating an account — we collect only what's needed to complete that action:</p>
+    <ul>
+      <li>Full name, phone number, and (optionally) email address</li>
+      <li>Delivery address and city, if you choose delivery instead of showroom pickup</li>
+      <li>Order details: which vehicle, payment method chosen, and payment amounts recorded</li>
+      <li>Messages you send through our WhatsApp button or AI chat widget</li>
+      <li>An account password, only if you choose to create one</li>
+    </ul>
+    <p>We do not collect government ID numbers, financial account numbers, or payment card details through this website — payments are arranged directly with our sales team via Mobile Money, bank transfer, or in person.</p>
+
+    <h2>2. Why we collect it</h2>
+    <p>We use your information only to: process and fulfill your order, contact you about your order or a test drive, respond to questions you send us, and maintain accurate sales records for our own business accounting. We do not sell your personal information to third parties.</p>
+
+    <h2>3. Who can see it</h2>
+    <p>Your order and contact details are visible to our own staff (sales team and management) for the purpose of fulfilling your order. We do not share your information with outside companies for marketing purposes.</p>
+
+    <h2>4. Cookies</h2>
+    <p>We use a small number of cookies to keep you logged in and remember your cart. If analytics tracking is enabled, it only activates after you accept it in the cookie banner. See our <a href="{{ url_for('store.legal_cookies') }}">Cookies Policy</a> for details.</p>
+
+    <h2>5. How long we keep it</h2>
+    <p>Order and payment records are kept for our business accounting requirements. Account information is kept until you ask us to delete it.</p>
+
+    <h2>6. Your rights</h2>
+    <p>You can ask us to show you what information we hold about you, correct it, or delete it, by contacting us using the details below. If you have an account, you can also just sign in and review your order history directly.</p>
+
+    <h2>7. Contact</h2>
+    <p>Questions about this policy can be sent to <a href="mailto:{{ business_email }}">{{ business_email }}</a> or via WhatsApp at <a href="tel:{{ '+' ~ whatsapp_number if whatsapp_number else '' }}">{{ business_phone }}</a>.</p>
+
+    <p style="margin-top:40px; padding:16px; background:var(--clr-bg-alt); border-radius:var(--radius-md); font-size:.85rem; color:var(--clr-text-muted);">
+      This page is a general-purpose privacy policy template. Before launch, it should be reviewed against Cameroon's data protection requirements and your business's actual registration details by a qualified legal professional.
+    </p>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Leads{% endblock %}
+
+{% block content %}
+<div class="section-head" style="margin-top:0;">
+  <h2>Leads (WhatsApp / AI Chat / Website)</h2>
+</div>
+
+<div class="category-filter">
+  <a href="{{ url_for('store_admin.leads') }}" class="category-chip {{ 'active' if not status }}">All</a>
+  {% for s in ['new', 'contacted', 'won', 'lost'] %}
+    <a href="{{ url_for('store_admin.leads', status=s) }}" class="category-chip {{ 'active' if status == s }}">{{ s|title }}</a>
+  {% endfor %}
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Source</th><th>Contact</th><th>Interested In</th><th>Message</th><th>Status</th><th>Received</th></tr>
+      </thead>
+      <tbody>
+        {% for lead in leads %}
+        <tr>
+          <td><span class="stock-pill stock-ok">{{ lead.source.replace('_',' ')|title }}</span></td>
+          <td>{{ lead.name or '—' }}<br><span class="product-sku">{{ lead.phone or lead.email or '' }}</span></td>
+          <td>{{ lead.car_listing.title if lead.car_listing else '—' }}</td>
+          <td style="max-width:280px;">{{ (lead.message or '')[:160] }}</td>
+          <td>
+            <form method="post" action="{{ url_for('store_admin.update_lead_status', lead_id=lead.id) }}">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <select name="status" onchange="this.form.submit()">
+                {% for s in ['new', 'contacted', 'won', 'lost'] %}
+                  <option value="{{ s }}" {{ 'selected' if lead.status == s }}>{{ s|title }}</option>
+                {% endfor %}
+              </select>
+            </form>
+          </td>
+          <td>{{ lead.created_at.strftime('%d %b %Y %H:%M') }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6"><div class="empty-state"><p>No leads yet — they'll show up here from WhatsApp, the AI chat widget, and test-drive requests.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

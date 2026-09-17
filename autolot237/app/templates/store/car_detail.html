@@ -1,0 +1,138 @@
+{% extends "store/base.html" %}
+{% block title %}{{ car.title }} — {{ "{:,.0f}".format(car.price) }} CFA | {{ business_name }}{% endblock %}
+{% block meta_description %}{{ car.title }}: {{ "{:,}".format(car.mileage_km) }} km, {{ car.transmission }}, {{ car.fuel_type }}. {{ car.description[:120] if car.description else 'Verified and inspected, available now in ' ~ (car.location or 'Douala') ~ '.' }}{% endblock %}
+{% block og_type %}product{% endblock %}
+{% block og_image %}{{ car.main_image or 'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=80' }}{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Vehicle",
+  "name": "{{ car.title }}",
+  "vehicleModelDate": "{{ car.year }}",
+  "mileageFromOdometer": { "@type": "QuantitativeValue", "value": "{{ car.mileage_km }}", "unitCode": "KMT" },
+  "fuelType": "{{ car.fuel_type }}",
+  "vehicleTransmission": "{{ car.transmission }}",
+  "brand": { "@type": "Brand", "name": "{{ car.make }}" },
+  "offers": {
+    "@type": "Offer",
+    "priceCurrency": "XAF",
+    "price": "{{ car.price|int }}",
+    "availability": "{{ 'https://schema.org/InStock' if car.is_available else 'https://schema.org/SoldOut' }}",
+    "url": "{{ request.url }}"
+  }
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top:30px;">
+  <div class="wrap">
+    <div class="eyebrow"><a href="{{ url_for('store.browse') }}">← Back to all cars</a></div>
+
+    <div class="detail-layout">
+      <div>
+        <div class="gallery-main">
+          <img src="{{ car.gallery[0] if car.gallery else 'https://images.unsplash.com/photo-1493238792000-8113da705763?w=900&q=80' }}" alt="{{ car.title }} — main photo">
+        </div>
+        {% if car.gallery|length > 1 %}
+        <div class="gallery-thumbs">
+          {% for img in car.gallery %}
+          <img src="{{ img }}" alt="{{ car.title }} photo {{ loop.index }}" class="{{ 'active' if loop.first }}">
+          {% endfor %}
+        </div>
+        {% endif %}
+
+        <h1 style="margin-top:26px;">{{ car.title }}</h1>
+        <div style="display:flex; gap:10px; margin-bottom:18px;">
+          <span class="badge {{ 'badge-new' if car.condition == 'new' else 'badge-out' }}" style="color:#1a1a2e; background:var(--clr-bg-alt);">{{ car.listing_code }}</span>
+          {% if not car.is_available %}<span class="badge badge-sale">SOLD</span>{% endif %}
+        </div>
+
+        {% if car.description %}<p>{{ car.description }}</p>{% endif %}
+
+        <h3>Specifications</h3>
+        <table class="spec-table">
+          <tr><td>Make &amp; model</td><td>{{ car.make }} {{ car.model }}</td></tr>
+          <tr><td>Year</td><td>{{ car.year }}</td></tr>
+          <tr><td>Mileage</td><td>{{ "{:,}".format(car.mileage_km) }} km</td></tr>
+          <tr><td>Transmission</td><td>{{ car.transmission|capitalize }}</td></tr>
+          <tr><td>Fuel type</td><td>{{ car.fuel_type|capitalize }}</td></tr>
+          <tr><td>Body type</td><td>{{ car.body_type|capitalize }}</td></tr>
+          {% if car.exterior_color %}<tr><td>Exterior color</td><td>{{ car.exterior_color }}</td></tr>{% endif %}
+          <tr><td>Condition</td><td>{{ car.condition|capitalize }}</td></tr>
+          {% if car.vin %}<tr><td>VIN</td><td>{{ car.vin }}</td></tr>{% endif %}
+          <tr><td>Location</td><td>{{ car.location or 'Douala' }}</td></tr>
+        </table>
+
+        {% if car.features %}
+        <h3>Features</h3>
+        <div class="feature-tags">{% for f in car.features %}<span>{{ f }}</span>{% endfor %}</div>
+        {% endif %}
+      </div>
+
+      <aside class="buy-box">
+        <span class="eyebrow">{{ 'AVAILABLE NOW' if car.is_available else 'SOLD' }}</span>
+        <div class="price">{{ "{:,.0f}".format(car.price) }} CFA<small>fixed price, no negotiation fees</small></div>
+
+        {% if car.is_available %}
+        <div class="actions">
+          <form method="post" action="{{ url_for('store.cart_add', slug=car.slug) }}">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <button class="btn btn-primary btn-block" type="submit">Add to Cart &amp; Buy</button>
+          </form>
+          <a class="btn btn-whatsapp btn-block" href="#" data-wa-button data-car-slug="{{ car.slug }}">Chat on WhatsApp</a>
+          <button class="btn btn-outline btn-block" type="button" onclick="document.getElementById('lead-form').scrollIntoView({behavior:'smooth'})">Request a Test Drive</button>
+        </div>
+        {% else %}
+        <p style="margin-top:12px;">This vehicle has been sold. Browse similar cars below.</p>
+        {% endif %}
+
+        <div class="trust">
+          <span>✓ Inspected</span>
+          <span>✓ 30-day warranty</span>
+          <span>✓ Instant invoice</span>
+        </div>
+
+        <form id="lead-form" class="lead-form" style="margin-top:22px; border-top:1px solid var(--clr-border); padding-top:18px;"
+              onsubmit="submitLead(event, '{{ car.slug }}')">
+          <div class="form-field"><label>Name</label><input type="text" name="name" required></div>
+          <div class="form-field"><label>Phone</label><input type="tel" name="phone" required></div>
+          <div class="form-field"><label>Message</label><textarea name="message" placeholder="I'd like to book a test drive...">I'd like to book a test drive for the {{ car.title }}.</textarea></div>
+          <button class="btn btn-outline btn-block" type="submit">Send Request</button>
+        </form>
+      </aside>
+    </div>
+  </div>
+</section>
+
+{% if related %}
+<section class="section section-alt">
+  <div class="wrap">
+    <div class="section-head"><div><div class="eyebrow">You might also like</div><h2>Similar cars</h2></div></div>
+    <div class="car-grid">
+      {% for car in related %}{% include "store/components/car_card.html" %}{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function submitLead(e, slug) {
+  e.preventDefault();
+  var form = e.target;
+  var data = {
+    name: form.name.value, phone: form.phone.value, message: form.message.value, source: "test_drive",
+  };
+  fetch("/cars/" + slug + "/lead", {
+    method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(data),
+  }).then(function(r){ return r.json(); }).then(function(res){
+    alert(res.message || "Thanks — we'll be in touch shortly.");
+    form.reset();
+  });
+}
+</script>
+{% endblock %}

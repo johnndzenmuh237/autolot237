@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>{% block title %}{{ business_name }} — Buy Verified Cars Online in Cameroon{% endblock %}</title>
+<meta name="description" content="{% block meta_description %}Browse verified new and used cars in Cameroon, chat with our AI assistant or on WhatsApp, and buy online with instant invoicing at {{ business_name }}.{% endblock %}">
+<link rel="canonical" href="{% block canonical %}{{ request.url }}{% endblock %}">
+
+<meta property="og:type" content="{% block og_type %}website{% endblock %}">
+<meta property="og:site_name" content="{{ business_name }}">
+<meta property="og:title" content="{% block og_title %}{{ self.title() }}{% endblock %}">
+<meta property="og:description" content="{% block og_description %}{{ self.meta_description() }}{% endblock %}">
+<meta property="og:image" content="{% block og_image %}https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&q=80{% endblock %}">
+<meta property="og:url" content="{{ request.url }}">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="robots" content="index, follow">
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AutoDealer",
+  "name": "{{ business_name }}",
+  "url": "{{ site_url }}",
+  "telephone": "{{ '+' ~ whatsapp_number if whatsapp_number else '' }}",
+  "email": "{{ business_email }}",
+  "priceRange": "CFA",
+  "address": { "@type": "PostalAddress", "addressLocality": "Douala", "addressRegion": "Littoral", "addressCountry": "CM" }
+}
+</script>
+{% endblock %}
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="icon" type="image/svg+xml" href="{{ url_for('static', filename='favicon.svg') }}">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Inter:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/store.css') }}">
+{% block extra_css %}{% endblock %}
+</head>
+<body class="store">
+
+<div class="ticker-wrap" aria-hidden="true">
+  <div class="ticker">
+    {% for item in ["Verified &amp; inspected before listing", "Pay online or on delivery — your choice", "Instant invoice on every order", "Chat with our AI assistant 24/7", "30-day mechanical warranty on used cars"] * 2 %}
+    <div class="ticker-item">{{ item|safe }}<b>&#8226;</b></div>
+    {% endfor %}
+  </div>
+</div>
+
+<header class="store-header">
+  <div class="wrap bar">
+    <a class="store-brand" href="{{ url_for('store.home') }}">
+      <span class="mark">&#10022;</span> {{ business_name }}
+    </a>
+    <nav class="store-nav" id="storeNav">
+      <a href="{{ url_for('store.home') }}" class="{{ 'active' if request.endpoint == 'store.home' }}">Home</a>
+      <a href="{{ url_for('store.browse') }}" class="{{ 'active' if request.endpoint == 'store.browse' }}">Browse Cars</a>
+      <a href="{{ url_for('store.browse') }}?condition=new">New Arrivals</a>
+      <a href="{{ url_for('store.about') }}" class="{{ 'active' if request.endpoint == 'store.about' }}">About Us</a>
+      <a href="{{ url_for('store.reviews') }}" class="{{ 'active' if request.endpoint == 'store.reviews' }}">Reviews</a>
+      <a href="{{ url_for('store.home') }}#how-it-works">How It Works</a>
+      <a href="{{ url_for('store.home') }}#contact">Contact</a>
+    </nav>
+    <div class="store-header-search">
+      <span>&#8981;</span>
+      <form action="{{ url_for('store.browse') }}" method="get" style="width:100%;">
+        <input type="search" name="q" placeholder="Search make or model…" aria-label="Search">
+      </form>
+    </div>
+    <div class="store-header-actions">
+      <a class="header-account-link" href="{{ url_for('account.dashboard') if logged_in_customer else url_for('account.login') }}">
+        <span class="header-icon-btn" aria-hidden="true">&#9678;</span>
+        <span class="account-label">{{ 'Hi, ' ~ logged_in_customer.full_name.split(' ')[0] if logged_in_customer else 'My Account' }}</span>
+      </a>
+      <a class="header-icon-btn" href="{{ url_for('store.cart_view') }}" aria-label="Cart">&#9737;<span class="badge-count">{{ cart_count }}</span></a>
+      <button class="nav-toggle" id="navToggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="storeNav"><span></span><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+<div class="nav-overlay" id="navOverlay"></div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% if messages %}
+  <div class="wrap" style="padding-top:16px;">
+    {% for category, message in messages %}
+      <div class="store-alert {{ category }}">{{ message }}</div>
+    {% endfor %}
+  </div>
+  {% endif %}
+{% endwith %}
+
+{% block content %}{% endblock %}
+
+<footer class="store-footer" id="contact">
+  <div class="wrap footer-grid">
+    <div>
+      <a href="{{ url_for('store.home') }}" class="footer-logo">&#10022; {{ business_name }}</a>
+      <p style="color:rgba(255,255,255,.5); max-width:32ch; margin-top:14px;">Verified cars, transparent pricing, and support on WhatsApp — buy your next car online with confidence.</p>
+    </div>
+    <div>
+      <h4>Shop</h4>
+      <a href="{{ url_for('store.browse') }}">All Cars</a>
+      <a href="{{ url_for('store.browse') }}?condition=new">New Cars</a>
+      <a href="{{ url_for('store.browse') }}?condition=used">Used Cars</a>
+    </div>
+    <div>
+      <h4>Company</h4>
+      <a href="{{ url_for('store.about') }}">About Us</a>
+      <a href="{{ url_for('store.reviews') }}">Reviews</a>
+      <a href="{{ url_for('account.dashboard') if logged_in_customer else url_for('account.login') }}">Track My Orders</a>
+      <a href="{{ url_for('store.home') }}#how-it-works">How It Works</a>
+      <a href="{{ url_for('auth.staff_portal') }}">Staff Login</a>
+    </div>
+    <div>
+      <h4>Talk to Us</h4>
+      <a href="#" data-wa-button data-car-slug="">WhatsApp Sales</a>
+      {% if business_phone %}<a href="tel:{{ business_phone|replace(' ', '') }}">{{ business_phone }}</a>{% endif %}
+      <a href="mailto:{{ business_email }}">{{ business_email }}</a>
+      {% if social_facebook or social_instagram or social_x or social_tiktok %}
+      <div style="display:flex; gap:12px; margin-top:14px;">
+        {% if social_facebook %}
+        <a href="{{ social_facebook }}" target="_blank" rel="noopener" aria-label="Facebook" style="color:rgba(255,255,255,.7);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M22 12a10 10 0 1 0-11.6 9.9v-7H7.9V12h2.5V9.8c0-2.5 1.5-3.9 3.8-3.9 1.1 0 2.2.2 2.2.2v2.4h-1.3c-1.2 0-1.6.8-1.6 1.6V12h2.8l-.4 2.9h-2.4v7A10 10 0 0 0 22 12z"/></svg>
+        </a>
+        {% endif %}
+        {% if social_instagram %}
+        <a href="{{ social_instagram }}" target="_blank" rel="noopener" aria-label="Instagram" style="color:rgba(255,255,255,.7);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 2 .3 2.4.5.6.2 1 .5 1.5 1 .4.4.7.9 1 1.5.2.4.4 1.2.5 2.4.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.3 2-.5 2.4-.3.6-.6 1-1 1.5-.5.4-.9.7-1.5 1-.4.2-1.2.4-2.4.5-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-2-.3-2.4-.5-.6-.3-1-.6-1.5-1-.4-.5-.7-.9-1-1.5-.2-.4-.4-1.2-.5-2.4C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.3-2 .5-2.4.2-.6.5-1 1-1.5.4-.4.9-.7 1.5-1 .4-.2 1.2-.4 2.4-.5C8.4 2.2 8.8 2.2 12 2.2zM12 0C8.7 0 8.3 0 7 .1 5.7.1 4.8.3 4 .7c-.9.3-1.6.8-2.3 1.5C1 2.9.5 3.6.2 4.5c-.3.8-.5 1.7-.6 3C0 8.7 0 9.1 0 12.4s0 3.7.1 5c.1 1.2.3 2.1.6 3 .3.9.8 1.6 1.5 2.3.7.7 1.4 1.2 2.3 1.5.8.3 1.7.5 3 .6 1.3.1 1.7.1 5 .1s3.7 0 5-.1c1.2-.1 2.1-.3 3-.6.9-.3 1.6-.8 2.3-1.5.7-.7 1.2-1.4 1.5-2.3.3-.8.5-1.7.6-3 .1-1.3.1-1.7.1-5s0-3.7-.1-5c-.1-1.2-.3-2.1-.6-3-.3-.9-.8-1.6-1.5-2.3C21.1 1 20.4.5 19.5.2c-.8-.3-1.7-.5-3-.6C15.2 0 14.8 0 12 0z"/><path d="M12 5.8a6.2 6.2 0 1 0 0 12.4 6.2 6.2 0 0 0 0-12.4zm0 10.2a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm7.9-10.5a1.4 1.4 0 1 1-2.9 0 1.4 1.4 0 0 1 2.9 0z"/></svg>
+        </a>
+        {% endif %}
+        {% if social_x %}
+        <a href="{{ social_x }}" target="_blank" rel="noopener" aria-label="X (Twitter)" style="color:rgba(255,255,255,.7);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M18.9 2H22l-7.6 8.7L23 22h-7l-5.5-7.2L4.1 22H1l8.1-9.3L1 2h7.2l5 6.6L18.9 2zm-1.2 18h1.7L6.4 4H4.6l13.1 16z"/></svg>
+        </a>
+        {% endif %}
+        {% if social_tiktok %}
+        <a href="{{ social_tiktok }}" target="_blank" rel="noopener" aria-label="TikTok" style="color:rgba(255,255,255,.7);">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16.6 5.8a4.6 4.6 0 0 1-3.8-4.6h-3.4v14.7a2.8 2.8 0 1 1-2-2.7v-3.5a6.3 6.3 0 1 0 5.4 6.2V9.3a7.9 7.9 0 0 0 4.5 1.4V7.3a4.6 4.6 0 0 1-.7-1.5z"/></svg>
+        </a>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+  </div>
+  <div class="wrap footer-bottom">
+    <span>&copy; {{ current_year }} {{ business_name }}. All rights reserved.</span>
+    <span style="display:flex; gap:16px; flex-wrap:wrap;">
+      <a href="{{ url_for('store.legal_privacy') }}">Privacy Policy</a>
+      <a href="{{ url_for('store.legal_terms') }}">Terms &amp; Conditions</a>
+      <a href="{{ url_for('store.legal_refund') }}">Refund Policy</a>
+      <a href="{{ url_for('store.legal_cookies') }}">Cookies Policy</a>
+    </span>
+    <span>Powered by LedgerIQ Business Management</span>
+  </div>
+</footer>
+
+<button class="wa-float" data-wa-button data-car-slug="" aria-label="Chat on WhatsApp">
+  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15L2 22l5.2-1.4A10 10 0 1 0 12 2zm0 18a8 8 0 0 1-4.1-1.1l-.3-.2-3 .8.8-2.9-.2-.3A8 8 0 1 1 12 20zm4.4-5.9c-.2-.1-1.4-.7-1.6-.8-.2-.1-.4-.1-.6.1s-.7.8-.9 1-.4.2-.7.1a6.6 6.6 0 0 1-3.3-2.9c-.2-.4.2-.4.6-1.3.1-.1.1-.3 0-.4l-.7-1.7c-.2-.4-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-1 2.3c0 1.3 1 2.6 1.1 2.8.1.2 2 3 4.8 4.2a5.4 5.4 0 0 0 3.3.7c.5-.1 1.4-.6 1.6-1.1s.2-1 .1-1.1-.2-.2-.4-.3z"/></svg>
+</button>
+
+<button class="ai-chat-launcher" id="ai-chat-launcher" aria-label="Chat with AI assistant">&#10022;</button>
+<div class="ai-chat-panel" id="ai-chat-panel">
+  <div class="ai-chat-head"><span class="dot"></span> {{ business_name }} Assistant</div>
+  <div class="ai-chat-body" id="ai-chat-body"></div>
+  <form class="ai-chat-foot" id="ai-chat-form">
+    <input id="ai-chat-input" type="text" placeholder="Ask about a car, price, financing…" autocomplete="off">
+    <button type="submit" aria-label="Send">&#10148;</button>
+  </form>
+</div>
+
+<div class="cookie-banner" id="cookieBanner" role="dialog" aria-label="Cookie consent">
+  <p>We use essential cookies to run this site (cart, login, security). With your permission we'd also like to use analytics cookies to see which pages are useful — see our <a href="{{ url_for('store.legal_cookies') }}">Cookies Policy</a>.</p>
+  <div class="actions">
+    <button class="btn btn-outline-light btn-sm" id="cookieDecline" type="button">Essential Only</button>
+    <button class="btn btn-primary btn-sm" id="cookieAccept" type="button">Accept All</button>
+  </div>
+</div>
+
+{% if ga_measurement_id %}
+<script>
+  window.AUTOLOT_GA_ID = "{{ ga_measurement_id }}";
+</script>
+{% endif %}
+<script src="{{ url_for('static', filename='js/store.js') }}"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

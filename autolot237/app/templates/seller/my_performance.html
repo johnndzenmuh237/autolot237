@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% set page_title = "My Performance" %}
+{% set page_subtitle = "How you're doing today, this week, and this month" %}
+{% block title %}My Performance{% endblock %}
+
+{% block content %}
+<div class="grid grid-3 stat-cards">
+  <div class="stat-card">
+    <div class="stat-label">Today</div>
+    <div class="stat-value figure">{{ today.revenue|currency }}</div>
+    <div class="stat-sub">{{ today.items_sold }} items — {{ today.profit|currency }} profit generated</div>
+  </div>
+  <div class="stat-card stat-alt">
+    <div class="stat-label">This Week</div>
+    <div class="stat-value figure">{{ week.revenue|currency }}</div>
+    <div class="stat-sub">{{ week.items_sold }} items — {{ week.profit|currency }} profit generated</div>
+  </div>
+  <div class="stat-card stat-warn">
+    <div class="stat-label">This Month</div>
+    <div class="stat-value figure">{{ month.revenue|currency }}</div>
+    <div class="stat-sub">{{ month.items_sold }} items — {{ month.profit|currency }} profit generated</div>
+  </div>
+</div>
+<div class="card">
+  <p class="form-hint">Profit figures reflect the value you've generated for the business based on the difference between selling price and cost price.</p>
+</div>
+{% endblock %}

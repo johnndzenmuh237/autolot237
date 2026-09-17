@@ -1,0 +1,45 @@
+{% extends "store/base.html" %}
+{% block title %}Order {{ order.order_number }} | {{ business_name }}{% endblock %}
+{% block content %}
+<section class="section" style="padding-top:50px; text-align:center;">
+  <div class="wrap" style="max-width:560px;">
+    <span class="status-chip {{ order.status }}" style="margin-bottom:16px;">{{ order.status_label }}</span>
+    <h1>Thank you, {{ order.customer.full_name.split(' ')[0] }}!</h1>
+
+    {% if order.status == 'paid' %}
+      <p>Your order <strong>#{{ order.order_number }}</strong> is fully paid and confirmed. We'll be in touch on
+        {{ order.customer.phone }} to arrange {{ 'delivery' if order.fulfillment_type == 'delivery' else 'pickup' }}.</p>
+    {% elif order.status == 'partial' %}
+      <p>Your order <strong>#{{ order.order_number }}</strong> has a deposit of {{ "{:,.0f}".format(order.amount_paid) }} CFA
+        recorded — a balance of <strong>{{ "{:,.0f}".format(order.balance_due) }} CFA</strong> remains. You can pay the
+        rest anytime from the link below.</p>
+    {% else %}
+      <p>Your order <strong>#{{ order.order_number }}</strong> has been received and the vehicle is reserved for you.
+        {% if order.payment_method == 'pay_on_delivery' %}Pay {{ "{:,.0f}".format(order.total_amount) }} CFA in cash or Mobile Money
+        when your car {{ 'is delivered' if order.fulfillment_type == 'delivery' else 'is ready for pickup' }}.
+        {% endif %}
+        Our team will reach out on {{ order.customer.phone }} to confirm.</p>
+    {% endif %}
+
+    <div class="summary-box" style="text-align:left; margin:26px 0;">
+      {% for item in order.items %}
+        <div class="summary-row"><span>{{ item.car_listing.title }}</span><span>{{ "{:,.0f}".format(item.line_total) }} CFA</span></div>
+      {% endfor %}
+      <div class="summary-row"><span>Paid</span><span>{{ "{:,.0f}".format(order.amount_paid) }} CFA</span></div>
+      <div class="summary-row total"><span>Balance Due</span><span>{{ "{:,.0f}".format(order.balance_due) }} CFA</span></div>
+    </div>
+
+    <div class="hero-actions" style="justify-content:center;">
+      {% if order.balance_due > 0 %}
+      <a class="btn btn-primary" href="{{ url_for('store.order_pay', order_number=order.order_number) }}">Pay Balance Now</a>
+      {% endif %}
+      <a class="btn btn-outline" href="{{ url_for('store.invoice_pdf', order_number=order.order_number) }}" target="_blank">Download Invoice (PDF)</a>
+      <a class="btn btn-whatsapp" href="#" data-wa-button data-car-slug="">Message Us on WhatsApp</a>
+    </div>
+    <p style="margin-top:24px;">
+      <a href="{{ url_for('account.dashboard') if logged_in_customer else url_for('account.login') }}">Track this and future orders in your account →</a>
+    </p>
+    <p><a href="{{ url_for('store.browse') }}">← Continue browsing</a></p>
+  </div>
+</section>
+{% endblock %}

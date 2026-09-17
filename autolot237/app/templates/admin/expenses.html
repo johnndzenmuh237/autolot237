@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% set page_title = "Business Expenses" %}
+{% set page_subtitle = "Track rent, utilities, salaries, and other costs" %}
+{% block title %}Expenses{% endblock %}
+
+{% block content %}
+<div class="grid grid-2" style="align-items:start;">
+  <div class="card">
+    <div class="card-header"><h3>Add Expense</h3></div>
+    <form method="POST" action="{{ url_for('expenses.add_expense') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <div class="form-group">
+        <label for="category">Category</label>
+        <select id="category" name="category" required>
+          {% for c in categories %}
+            <option value="{{ c }}">{{ c }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="description">Description</label>
+        <input type="text" id="description" name="description" placeholder="e.g. October shop rent">
+      </div>
+      <div class="form-group">
+        <label for="amount">Amount</label>
+        <input type="number" id="amount" name="amount" min="0" step="1" required>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block">Record Expense</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+      <h3>Recent Expenses</h3>
+      <span class="badge badge-neutral figure">{{ total|currency }} total</span>
+    </div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Category</th><th>Description</th><th class="num">Amount</th><th>Date</th></tr></thead>
+        <tbody>
+          {% for e in expenses %}
+          <tr>
+            <td>{{ e.category }}</td>
+            <td>{{ e.description or "—" }}</td>
+            <td class="num figure">{{ e.amount|currency }}</td>
+            <td>{{ e.created_at.strftime('%b %d, %Y') }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4"><div class="empty-state"><p>No expenses recorded yet.</p></div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}

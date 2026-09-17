@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit Car' if listing else 'Add Car' }}{% endblock %}
+
+{% block content %}
+<div class="section-head" style="margin-top:0;">
+  <h2>{{ 'Edit ' ~ listing.title if listing else 'Add a Car Listing' }}</h2>
+  <div class="page-actions"><a href="{{ url_for('store_admin.cars') }}" class="btn btn-secondary">Back</a></div>
+</div>
+
+<div class="card" style="padding:24px;">
+  <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-row-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+      <div class="form-field"><label>Make</label><input type="text" name="make" value="{{ listing.make if listing }}" required></div>
+      <div class="form-field"><label>Model</label><input type="text" name="model" value="{{ listing.model if listing }}" required></div>
+      <div class="form-field"><label>Year</label><input type="number" name="year" value="{{ listing.year if listing }}" required></div>
+    </div>
+    <div class="form-row-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+      <div class="form-field"><label>Mileage (km)</label><input type="number" name="mileage_km" value="{{ listing.mileage_km if listing else 0 }}"></div>
+      <div class="form-field"><label>Transmission</label>
+        <select name="transmission">
+          <option value="automatic" {{ 'selected' if listing and listing.transmission=='automatic' }}>Automatic</option>
+          <option value="manual" {{ 'selected' if listing and listing.transmission=='manual' }}>Manual</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Fuel type</label>
+        <select name="fuel_type">
+          {% for f in ['petrol','diesel','hybrid','electric'] %}
+          <option value="{{ f }}" {{ 'selected' if listing and listing.fuel_type==f }}>{{ f|capitalize }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+    <div class="form-row-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+      <div class="form-field"><label>Body type</label>
+        <select name="body_type">
+          {% for b in ['sedan','suv','hatchback','pickup','van','coupe','wagon'] %}
+          <option value="{{ b }}" {{ 'selected' if listing and listing.body_type==b }}>{{ b|capitalize }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-field"><label>Condition</label>
+        <select name="condition">
+          <option value="used" {{ 'selected' if listing and listing.condition=='used' }}>Used</option>
+          <option value="new" {{ 'selected' if listing and listing.condition=='new' }}>New</option>
+        </select>
+      </div>
+      <div class="form-field"><label>Exterior color</label><input type="text" name="exterior_color" value="{{ listing.exterior_color if listing else '' }}"></div>
+    </div>
+    <div class="form-row-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:14px;">
+      <div class="form-field"><label>VIN (optional)</label><input type="text" name="vin" value="{{ listing.vin if listing else '' }}"></div>
+      <div class="form-field"><label>Location</label><input type="text" name="location" value="{{ listing.location if listing else 'Douala' }}"></div>
+    </div>
+
+    <div class="form-field"><label>Description</label><textarea name="description" rows="3">{{ listing.description if listing else '' }}</textarea></div>
+    <div class="form-field"><label>Features (comma separated)</label><input type="text" name="features" value="{{ listing.features_csv if listing else '' }}" placeholder="Air conditioning, Bluetooth, Reverse camera"></div>
+
+    <div class="form-row-grid" style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px;">
+      <div class="form-field"><label>Price (CFA)</label><input type="number" name="price" value="{{ listing.product.min_price if listing else '' }}" required></div>
+      <div class="form-field"><label>Cost price (internal)</label><input type="number" name="cost_price" value="{{ listing.product.cost_price if listing else '' }}"></div>
+      <div class="form-field"><label>Stock (usually 1)</label><input type="number" name="stock_quantity" value="{{ listing.product.stock_quantity if listing else 1 }}"></div>
+    </div>
+
+    <div class="form-field">
+      <label>Photo URLs (one per line — first is the main photo)</label>
+      <textarea name="gallery_urls" rows="3" placeholder="https://images.unsplash.com/...">{{ listing.gallery|join('\n') if listing else '' }}</textarea>
+    </div>
+
+    <label style="display:flex; align-items:center; gap:8px; margin:10px 0;">
+      <input type="checkbox" name="is_featured" {{ 'checked' if listing and listing.is_featured }}> Feature on homepage
+    </label>
+    {% if listing %}
+    <label style="display:flex; align-items:center; gap:8px; margin:10px 0;">
+      <input type="checkbox" name="is_published" {{ 'checked' if listing.is_published }}> Published (visible on storefront)
+    </label>
+    {% endif %}
+
+    <button class="btn btn-primary" type="submit">{{ 'Save Changes' if listing else 'Publish Listing' }}</button>
+  </form>
+</div>
+{% endblock %}

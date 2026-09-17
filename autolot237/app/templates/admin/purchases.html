@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% set page_title = "Product Purchases" %}
+{% set page_subtitle = "Inventory restocking history" %}
+{% block title %}Product Purchases{% endblock %}
+
+{% block content %}
+<div class="card">
+  <div class="card-header">
+    <h3>Purchase History</h3>
+    <span class="badge badge-neutral figure">{{ total|currency }} total</span>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead><tr><th>Product</th><th class="num">Qty</th><th class="num">Cost/Item</th><th class="num">Total</th><th>Note</th><th>Date</th></tr></thead>
+      <tbody>
+        {% for p in purchases %}
+        <tr>
+          <td>{{ p.product.name }}</td>
+          <td class="num figure">{{ p.quantity }}</td>
+          <td class="num figure">{{ p.cost_per_item|currency }}</td>
+          <td class="num figure">{{ p.total_cost|currency }}</td>
+          <td>{{ p.note or "—" }}</td>
+          <td>{{ p.created_at.strftime('%b %d, %Y') }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6"><div class="empty-state"><p>No purchases recorded yet.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
