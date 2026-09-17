@@ -1,38 +1,58 @@
 document.addEventListener("DOMContentLoaded", function () {
-  /* ---------- scroll-reveal animations ---------- */
-  var revealEls = document.querySelectorAll(".reveal, .car-card, .step-card");
-  if ("IntersectionObserver" in window && revealEls.length) {
-    revealEls.forEach(function (el) { el.classList.add("reveal"); });
-    var io = new IntersectionObserver(function (entries) {
-      entries.forEach(function (entry) {
-        if (entry.isIntersecting) {
-          entry.target.classList.add("in-view");
-          io.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
-    revealEls.forEach(function (el) { io.observe(el); });
-  } else {
-    revealEls.forEach(function (el) { el.classList.add("in-view"); });
+  /* ---------- scroll-reveal animations (decorative only — never gates
+     product content on JS/IntersectionObserver actually firing) ---------- */
+  var revealEls = document.querySelectorAll(".reveal");
+  if (revealEls.length) {
+    if ("IntersectionObserver" in window) {
+      var io = new IntersectionObserver(function (entries) {
+        entries.forEach(function (entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("in-view");
+            io.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
+      revealEls.forEach(function (el) { io.observe(el); });
+    }
+    // Safety net: whatever happens with the observer (unsupported browser,
+    // in-app webview quirks, a JS error elsewhere on the page), nothing
+    // stays invisible for more than a second.
+    setTimeout(function () {
+      revealEls.forEach(function (el) { el.classList.add("in-view"); });
+    }, 1200);
   }
 
   var toggle = document.getElementById("navToggle");
   var nav = document.getElementById("storeNav");
   var overlay = document.getElementById("navOverlay");
+  var lockedScrollY = 0;
 
   function openNav() {
     nav.classList.add("open");
     overlay.classList.add("open");
     toggle.classList.add("active");
     toggle.setAttribute("aria-expanded", "true");
-    document.body.style.overflow = "hidden";
+    // iOS Safari ignores plain `overflow: hidden` on the body and still lets
+    // the page "rubber-band" scroll behind a fixed drawer — pinning the body
+    // in place with position:fixed is the reliable cross-browser fix.
+    lockedScrollY = window.scrollY || window.pageYOffset || 0;
+    document.body.style.position = "fixed";
+    document.body.style.top = "-" + lockedScrollY + "px";
+    document.body.style.left = "0";
+    document.body.style.right = "0";
+    document.body.style.width = "100%";
   }
   function closeNav() {
     nav.classList.remove("open");
     overlay.classList.remove("open");
     toggle.classList.remove("active");
     toggle.setAttribute("aria-expanded", "false");
-    document.body.style.overflow = "";
+    document.body.style.position = "";
+    document.body.style.top = "";
+    document.body.style.left = "";
+    document.body.style.right = "";
+    document.body.style.width = "";
+    window.scrollTo(0, lockedScrollY);
   }
   if (toggle && nav && overlay) {
     toggle.addEventListener("click", function () {
