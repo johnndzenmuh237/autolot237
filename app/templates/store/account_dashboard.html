@@ -1,13 +1,14 @@
 {% extends "store/base.html" %}
 {% block title %}My Orders — {{ business_name }}{% endblock %}
 {% block content %}
-<section class="section" style="padding-top:40px;">
+{% set page_title = "Hi, " ~ customer.full_name.split(' ')[0] %}
+{% set page_subtitle = "Track your orders, payments, and remaining balances here." %}
+{% set breadcrumbs = [{"label": "My Account"}] %}
+{% include "store/components/page_header.html" %}
+<section class="section" style="padding-top:44px;">
   <div class="wrap">
     <div class="section-head">
-      <div>
-        <span class="eyebrow">My Account</span>
-        <h1 style="margin-bottom:0;">Hi, {{ customer.full_name.split(' ')[0] }}</h1>
-      </div>
+      <div></div>
       <a href="{{ url_for('account.logout') }}" class="btn btn-outline btn-sm">Sign Out</a>
     </div>
 

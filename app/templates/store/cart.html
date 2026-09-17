@@ -1,10 +1,11 @@
 {% extends "store/base.html" %}
 {% block title %}Your Cart — {{ business_name }}{% endblock %}
 {% block content %}
-<section class="section" style="padding-top:36px;">
+{% set page_title = "Your Cart" %}
+{% set breadcrumbs = [{"label": "Cart"}] %}
+{% include "store/components/page_header.html" %}
+<section class="section" style="padding-top:44px;">
   <div class="wrap">
-    <h1>Your cart</h1>
-
     {% if not cars %}
       <p>Your cart is empty. <a href="{{ url_for('store.browse') }}">Browse cars →</a></p>
     {% else %}

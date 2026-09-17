@@ -1,5 +1,21 @@
 document.addEventListener("DOMContentLoaded", function () {
-  /* ---------- mobile nav (drawer) ---------- */
+  /* ---------- scroll-reveal animations ---------- */
+  var revealEls = document.querySelectorAll(".reveal, .car-card, .step-card");
+  if ("IntersectionObserver" in window && revealEls.length) {
+    revealEls.forEach(function (el) { el.classList.add("reveal"); });
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
+          io.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: "0px 0px -40px 0px" });
+    revealEls.forEach(function (el) { io.observe(el); });
+  } else {
+    revealEls.forEach(function (el) { el.classList.add("in-view"); });
+  }
+
   var toggle = document.getElementById("navToggle");
   var nav = document.getElementById("storeNav");
   var overlay = document.getElementById("navOverlay");
