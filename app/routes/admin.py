@@ -25,7 +25,7 @@ def dashboard():
     top = analytics_service.top_products(limit=5, start=month["start"], end=month["end"])
     latest_insights = AIInsight.query.order_by(AIInsight.created_at.desc()).limit(4).all()
 
-    sellers = User.query.filter_by(role="seller", is_active_account=True).all()
+    sellers = User.query.filter(User.role.in_(["seller", "worker"]), User.is_active_account.is_(True)).all()
     total_employees = len(sellers)
     monthly_payroll = sum(s.salary or 0 for s in sellers)
     unpaid_this_month = sum(
@@ -53,7 +53,7 @@ def dashboard():
 @login_required
 @admin_required
 def employees():
-    sellers = User.query.filter_by(role="seller").order_by(User.full_name).all()
+    sellers = User.query.filter(User.role.in_(["seller", "worker"])).order_by(User.full_name).all()
     performance = {p.id: p for p in analytics_service.seller_performance()}
     current_period = payroll_service.current_period()
     payment_status = {

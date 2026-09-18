@@ -49,6 +49,7 @@ def create_app(config_class=Config):
     from app.routes.storefront import store_bp
     from app.routes.storefront_admin import store_admin_bp
     from app.routes.account import account_bp
+    from app.routes.attendance import attendance_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
@@ -61,6 +62,7 @@ def create_app(config_class=Config):
     app.register_blueprint(store_bp)
     app.register_blueprint(store_admin_bp)
     app.register_blueprint(account_bp)
+    app.register_blueprint(attendance_bp)
 
     # Only the true JSON/fetch API endpoints (called by JS, not an HTML form)
     # are CSRF-exempt — every real <form> on the storefront now carries a

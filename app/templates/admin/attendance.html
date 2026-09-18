@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}Attendance{% endblock %}
+
+{% block content %}
+<div class="section-head" style="margin-top:0;">
+  <h2>Attendance</h2>
+  <div class="page-actions">
+    <form method="get" style="display:flex; gap:8px; align-items:center;">
+      <input type="date" name="date" value="{{ selected_date.isoformat() }}" onchange="this.form.submit()"
+             style="padding:8px 12px; border:1px solid var(--border); border-radius:8px;">
+    </form>
+  </div>
+</div>
+
+<div class="card" style="margin-bottom:24px;">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Employee</th><th>Role</th><th>Position</th><th>{{ selected_date.strftime('%d %b %Y') }}</th></tr>
+      </thead>
+      <tbody>
+        {% for row in roster_rows %}
+        <tr>
+          <td>{{ row.user.full_name }}</td>
+          <td>{{ row.user.role|capitalize }}</td>
+          <td>{{ row.user.position or '—' }}</td>
+          <td>
+            {% if row.present %}
+              <span class="stock-pill stock-ok">Present</span>
+            {% elif selected_date > today %}
+              <span class="stock-pill">—</span>
+            {% else %}
+              <span class="stock-pill stock-low">Absent</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4"><div class="empty-state"><p>No sellers or workers registered yet.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section-head"><h2 style="font-size:1.1rem;">Last 30 Days — Attendance Summary</h2></div>
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Employee</th><th class="num">Days Present</th><th class="num">Days Absent</th><th class="num">Attendance Rate</th></tr>
+      </thead>
+      <tbody>
+        {% for row in absence_summary %}
+        <tr>
+          <td>{{ row.user.full_name }} <span class="product-sku">{{ row.user.role }}</span></td>
+          <td class="num figure">{{ row.present_days }}</td>
+          <td class="num figure">{{ row.absent_days }}</td>
+          <td class="num">
+            {% set rate = (row.present_days / row.total_days * 100) if row.total_days else 0 %}
+            <span class="stock-pill {{ 'stock-ok' if rate >= 80 else ('stock-low' if rate < 50 else '') }}">{{ "%.0f"|format(rate) }}%</span>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="4"><div class="empty-state"><p>No attendance data yet.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

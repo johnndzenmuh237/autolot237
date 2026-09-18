@@ -25,6 +25,15 @@
         <input type="password" id="password" name="password" required>
       </div>
       <div class="form-group">
+        <label for="role">Account Type</label>
+        <select id="role" name="role">
+          <option value="seller" {{ 'selected' if form.get('role', 'seller') == 'seller' }}>Seller — sales tools + attendance</option>
+          <option value="worker" {{ 'selected' if form.get('role') == 'worker' }}>Worker — attendance only, no sales tools</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
         <label for="email">Email (optional)</label>
         <input type="email" id="email" name="email" value="{{ form.get('email','') }}">
       </div>

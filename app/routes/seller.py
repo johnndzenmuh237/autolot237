@@ -2,6 +2,7 @@ from flask import Blueprint, render_template
 from flask_login import login_required, current_user
 from app.models.sale import Sale
 from app.utils.helpers import get_period_range
+from app.utils.decorators import seller_required
 
 seller_bp = Blueprint("seller", __name__, url_prefix="/seller")
 
@@ -20,6 +21,7 @@ def _summary(seller, start, end):
 @seller_bp.route("/")
 @seller_bp.route("/dashboard")
 @login_required
+@seller_required
 def dashboard():
     t_start, t_end = get_period_range("today")
     w_start, w_end = get_period_range("week")
@@ -38,6 +40,7 @@ def dashboard():
 
 @seller_bp.route("/my-sales")
 @login_required
+@seller_required
 def my_sales():
     sales = current_user.sales.order_by(Sale.created_at.desc()).all()
     return render_template("seller/my_sales.html", sales=sales)
@@ -45,6 +48,7 @@ def my_sales():
 
 @seller_bp.route("/my-performance")
 @login_required
+@seller_required
 def my_performance():
     t_start, t_end = get_period_range("today")
     w_start, w_end = get_period_range("week")

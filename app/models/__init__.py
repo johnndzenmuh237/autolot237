@@ -9,8 +9,10 @@ from app.models.car import CarListing
 from app.models.order import Customer, Order, OrderItem, PaymentRecord
 from app.models.lead import Lead
 from app.models.review import Review
+from app.models.attendance import Attendance
 
 __all__ = [
     "User", "Product", "Sale", "InventoryPurchase", "Expense", "AIInsight", "SalaryPayment",
     "CarListing", "Customer", "Order", "OrderItem", "PaymentRecord", "Lead", "Review",
+    "Attendance",
 ]

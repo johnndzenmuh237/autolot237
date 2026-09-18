@@ -36,7 +36,8 @@
 
       <div class="nav-group">
         <div class="nav-label">Employees</div>
-        <a class="nav-link {{ 'active' if request.endpoint == 'admin.employees' }}" href="{{ url_for('admin.employees') }}">All Sellers</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'admin.employees' }}" href="{{ url_for('admin.employees') }}">All Sellers &amp; Workers</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'attendance.roster' }}" href="{{ url_for('attendance.roster') }}">Attendance</a>
       </div>
 
       <div class="nav-group">
@@ -59,7 +60,7 @@
         <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.reviews' }}" href="{{ url_for('store_admin.reviews') }}">Customer Reviews</a>
         <a class="nav-link" href="{{ url_for('store.home') }}" target="_blank" rel="noopener">View Live Site &#8599;</a>
       </div>
-    {% else %}
+    {% elif current_user.role == 'seller' %}
       <div class="nav-group">
         <a class="nav-link {{ 'active' if request.endpoint == 'seller.dashboard' }}" href="{{ url_for('seller.dashboard') }}">
           <span class="nav-icon">&#9679;</span> My Dashboard
@@ -71,12 +72,19 @@
         <a class="nav-link {{ 'active' if request.endpoint == 'sales.record' }}" href="{{ url_for('sales.record') }}">Record a Sale</a>
         <a class="nav-link {{ 'active' if request.endpoint == 'seller.my_sales' }}" href="{{ url_for('seller.my_sales') }}">My Sales</a>
         <a class="nav-link {{ 'active' if request.endpoint == 'seller.my_performance' }}" href="{{ url_for('seller.my_performance') }}">My Performance</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'attendance.mark' }}" href="{{ url_for('attendance.mark') }}">My Attendance</a>
       </div>
 
       <div class="nav-group">
         <div class="nav-label">Storefront</div>
         <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.orders' }}" href="{{ url_for('store_admin.orders') }}">Website Orders</a>
         <a class="nav-link" href="{{ url_for('store.home') }}" target="_blank" rel="noopener">View Live Site &#8599;</a>
+      </div>
+    {% else %}
+      <div class="nav-group">
+        <a class="nav-link {{ 'active' if request.endpoint == 'attendance.mark' }}" href="{{ url_for('attendance.mark') }}">
+          <span class="nav-icon">&#9679;</span> My Attendance
+        </a>
       </div>
     {% endif %}
   </nav>

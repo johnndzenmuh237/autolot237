@@ -8,18 +8,30 @@ from app.utils.decorators import admin_required
 auth_bp = Blueprint("auth", __name__)
 
 
+def _dashboard_for(user):
+    if user.is_admin:
+        return "admin.dashboard"
+    if user.role == "seller":
+        return "seller.dashboard"
+    return "attendance.mark"  # workers land straight on the attendance page
+
+
+def _login_route_for(role):
+    return {"admin": "auth.login", "seller": "auth.seller_login", "worker": "auth.worker_login"}.get(role, "auth.staff_portal")
+
+
 @auth_bp.route("/staff")
 def staff_portal():
     if current_user.is_authenticated:
-        return redirect(url_for("admin.dashboard" if current_user.is_admin else "seller.dashboard"))
+        return redirect(url_for(_dashboard_for(current_user)))
     return render_template("staff_portal.html")
 
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    """Admin login only. Sellers use /seller-login."""
+    """Admin login only. Sellers use /seller-login, workers use /worker-login."""
     if current_user.is_authenticated:
-        return redirect(url_for("admin.dashboard" if current_user.is_admin else "seller.dashboard"))
+        return redirect(url_for(_dashboard_for(current_user)))
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
@@ -27,9 +39,9 @@ def login():
         user = User.query.filter_by(username=username).first()
 
         if user and user.check_password(password) and user.is_active_account:
-            if not user.is_admin:
-                flash("That account is a seller account — please use the seller login instead.", "error")
-                return redirect(url_for("auth.seller_login"))
+            if user.role != "admin":
+                flash(f"That's a {user.role} account — please use the {user.role} login instead.", "error")
+                return redirect(url_for(_login_route_for(user.role)))
             login_user(user, remember=True)
             flash(f"Welcome back, {user.full_name}.", "success")
             next_page = request.args.get("next")
@@ -44,9 +56,9 @@ def login():
 
 @auth_bp.route("/seller-login", methods=["GET", "POST"])
 def seller_login():
-    """Seller login only. Admins use /login."""
+    """Seller login only. Admins use /login, workers use /worker-login."""
     if current_user.is_authenticated:
-        return redirect(url_for("admin.dashboard" if current_user.is_admin else "seller.dashboard"))
+        return redirect(url_for(_dashboard_for(current_user)))
 
     if request.method == "POST":
         username = request.form.get("username", "").strip()
@@ -54,9 +66,9 @@ def seller_login():
         user = User.query.filter_by(username=username).first()
 
         if user and user.check_password(password) and user.is_active_account:
-            if user.is_admin:
-                flash("That account is an admin account — please use the admin login instead.", "error")
-                return redirect(url_for("auth.login"))
+            if user.role != "seller":
+                flash(f"That's an {user.role} account — please use the {user.role} login instead.", "error")
+                return redirect(url_for(_login_route_for(user.role)))
             login_user(user, remember=True)
             flash(f"Welcome back, {user.full_name}.", "success")
             next_page = request.args.get("next")
@@ -69,13 +81,38 @@ def seller_login():
     return render_template("seller_login.html")
 
 
+@auth_bp.route("/worker-login", methods=["GET", "POST"])
+def worker_login():
+    """Worker login only — for staff who just need to mark attendance, no
+    sales tools. Admins use /login, sellers use /seller-login."""
+    if current_user.is_authenticated:
+        return redirect(url_for(_dashboard_for(current_user)))
+
+    if request.method == "POST":
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        user = User.query.filter_by(username=username).first()
+
+        if user and user.check_password(password) and user.is_active_account:
+            if user.role != "worker":
+                flash(f"That's an {user.role} account — please use the {user.role} login instead.", "error")
+                return redirect(url_for(_login_route_for(user.role)))
+            login_user(user, remember=True)
+            flash(f"Welcome back, {user.full_name}.", "success")
+            return redirect(url_for("attendance.mark"))
+
+        flash("Invalid username or password.", "error")
+
+    return render_template("worker_login.html")
+
+
 @auth_bp.route("/logout")
 @login_required
 def logout():
-    was_admin = current_user.is_admin
+    was_role = current_user.role
     logout_user()
     flash("You have been signed out.", "info")
-    return redirect(url_for("auth.login" if was_admin else "auth.seller_login"))
+    return redirect(url_for(_login_route_for(was_role)))
 
 
 @auth_bp.route("/employees/register", methods=["GET", "POST"])
@@ -94,6 +131,9 @@ def register_seller():
         emergency_contact_name = request.form.get("emergency_contact_name", "").strip()
         emergency_contact_phone = request.form.get("emergency_contact_phone", "").strip()
         notes = request.form.get("notes", "").strip()
+        role = request.form.get("role", "seller")
+        if role not in ("seller", "worker"):
+            role = "seller"
 
         salary_raw = request.form.get("salary", "0")
         hire_date_raw = request.form.get("hire_date", "")
@@ -129,7 +169,7 @@ def register_seller():
             return render_template("admin/add_employee.html", form=request.form)
 
         seller = User(
-            full_name=full_name, username=username, email=email or None, role="seller",
+            full_name=full_name, username=username, email=email or None, role=role,
             phone=phone, address=address, national_id=national_id or None,
             position=position, salary=salary, hire_date=hire_date,
             emergency_contact_name=emergency_contact_name or None,

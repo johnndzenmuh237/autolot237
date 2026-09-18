@@ -3,13 +3,14 @@ from flask_login import login_required, current_user
 from app.models.product import Product
 from app.models.sale import Sale
 from app.services.sales_service import record_sale, SaleError, return_sale
-from app.utils.decorators import admin_required
+from app.utils.decorators import admin_required, staff_required
 
 sales_bp = Blueprint("sales", __name__, url_prefix="/sales")
 
 
 @sales_bp.route("/record")
 @login_required
+@staff_required
 def record():
     products = Product.query.filter_by(is_active=True).order_by(Product.category, Product.name).all()
     return render_template(
@@ -20,6 +21,7 @@ def record():
 
 @sales_bp.route("/quick-sale", methods=["POST"])
 @login_required
+@staff_required
 def quick_sale():
     """Tick-to-sell endpoint: one product, one instant sale, JSON in/out.
 
@@ -53,6 +55,7 @@ def quick_sale():
 
 @sales_bp.route("/product/<int:product_id>")
 @login_required
+@staff_required
 def product_info(product_id):
     product = Product.query.get_or_404(product_id)
     return jsonify({
