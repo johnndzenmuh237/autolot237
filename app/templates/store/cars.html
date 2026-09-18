@@ -1,68 +1,200 @@
 {% extends "store/base.html" %}
-{% block title %}Browse Cars — {{ business_name }}{% endblock %}
-{% block meta_description %}Filter {{ total }} verified new and used cars by make, price, and body type at {{ business_name }}.{% endblock %}
+{% block title %}Cars for Sale in Douala, Cameroon | {{ business_name }}{% endblock %}
+{% block meta_description %}Browse {{ total }} new and used cars for sale in Douala, Cameroon. Search vehicles by make, model, body type, condition and price at {{ business_name }}.{% endblock %}
+
+{# Optional: only renders if store/base.html defines a `structured_data` block.
+   If the block does not exist in base.html, Jinja2 ignores this silently. #}
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How can I find cars for sale in Douala?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Use the search field and filters on this page to narrow the inventory by make, body type, condition and price, then open any listing to see its details."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I search for a specific car make or model?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Type a make or model into the search field and the inventory will be filtered to matching vehicles."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I filter cars by price?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Enter a minimum price, a maximum price, or both, to see only vehicles within your budget."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I choose between new and used cars?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. The condition filter lets you view new vehicles, used vehicles, or both together."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I filter by body type?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. The body type filter is built from the vehicles currently published, and typically includes options such as sedans, SUVs, pickups, hatchbacks and vans."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How often is the inventory updated?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "This page shows the vehicles currently published on the website. As listings are added or sold, the inventory shown here changes accordingly."
+      }
+    }
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
-{% set page_title = "Browse the Lot" %}
+{% set page_title = "Cars for Sale in Douala, Cameroon" %}
 {% set page_subtitle = total ~ " verified car" ~ ('s' if total != 1) ~ " ready for a test drive or online checkout." %}
 {% set breadcrumbs = [{"label": "Browse Cars"}] %}
 {% include "store/components/page_header.html" %}
+
+<style>
+  /* Scoped progressive enhancements for the browse page only. */
+  .browse-intro { max-width: 62ch; margin: 0 0 22px; opacity: .85; line-height: 1.65; }
+  .filters-panel { border: 0; padding: 0; margin: 0; }
+  .filters-toggle { display: none; }
+  .filters-note { font-size: .86rem; opacity: .7; margin: -4px 0 16px; line-height: 1.5; }
+  .filters-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+  .filters-clear { text-align: center; font-size: .9rem; text-decoration: underline; opacity: .8; }
+  .filters-clear:hover { opacity: 1; }
+  .results-count { font-weight: 600; }
+  .results-count small { display: block; font-weight: 400; font-size: .82rem; opacity: .7; }
+  .quick-links { display: flex; flex-wrap: wrap; gap: 10px; margin: 26px 0 6px; padding: 0; list-style: none; }
+  .quick-links a {
+    display: inline-block; padding: 8px 14px; border: 1px solid currentColor;
+    border-radius: 999px; font-size: .88rem; text-decoration: none; opacity: .85;
+  }
+  .quick-links a:hover, .quick-links a:focus-visible { opacity: 1; }
+  .browse-empty { padding: 34px 0; max-width: 52ch; }
+  .browse-empty h3 { margin: 0 0 8px; }
+  .browse-info { margin-top: 40px; max-width: 70ch; line-height: 1.7; }
+  .browse-info h2 { margin-bottom: 10px; }
+  .browse-faq { margin-top: 36px; }
+  .browse-faq details {
+    border-bottom: 1px solid rgba(128,128,128,.28); padding: 14px 0;
+  }
+  .browse-faq summary { cursor: pointer; font-weight: 600; list-style: none; }
+  .browse-faq summary::-webkit-details-marker { display: none; }
+  .browse-faq summary::after { content: "+"; float: right; opacity: .6; }
+  .browse-faq details[open] summary::after { content: "–"; }
+  .browse-faq h3 { display: inline; font-size: 1rem; margin: 0; font-weight: 600; }
+  .browse-faq p { margin: 10px 0 0; opacity: .85; line-height: 1.6; }
+  #filter-form input:focus-visible,
+  #filter-form select:focus-visible,
+  #sort-form select:focus-visible,
+  .pagination a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  .pagination a[aria-current="page"] { font-weight: 700; }
+  .car-grid > * { min-width: 0; }
+
+  @media (max-width: 860px) {
+    .filters-toggle {
+      display: block; width: 100%; cursor: pointer; font-weight: 600;
+      padding: 12px 14px; border: 1px solid rgba(128,128,128,.35);
+      border-radius: 10px; list-style: none; margin-bottom: 12px;
+    }
+    .filters-toggle::-webkit-details-marker { display: none; }
+    .filters-toggle::after { content: "▾"; float: right; }
+    .filters-panel[open] .filters-toggle::after { content: "▴"; }
+    .filters-panel:not([open]) #filter-form { display: none; }
+    .filter-range { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .filter-range input { width: 100%; min-width: 0; }
+    #filter-form input, #filter-form select { width: 100%; box-sizing: border-box; }
+    .results-bar { flex-wrap: wrap; gap: 10px; }
+  }
+</style>
+
 <section class="section" style="padding-top:44px;">
   <div class="wrap">
-    <div class="eyebrow">{{ total }} car{{ 's' if total != 1 }} available</div>
+    <div class="eyebrow">{{ total }} vehicle{{ 's' if total != 1 }} currently available</div>
+
+    <p class="browse-intro">Explore the current selection of new and used cars available from {{ business_name }}.
+      Search by make, body type, condition or price to find vehicles that match your needs, then open a listing
+      to explore the details.</p>
 
     <div class="browse-layout">
-      <aside class="filters">
-        <h3>Filters</h3>
-        <form id="filter-form" method="get">
-          <div class="filter-group">
-            <label for="q">Search</label>
-            <input type="text" id="q" name="q" value="{{ filters.q }}" placeholder="Make or model">
-          </div>
-          <div class="filter-group">
-            <label for="make">Make</label>
-            <select id="make" name="make">
-              <option value="">Any make</option>
-              {% for m in makes %}<option value="{{ m }}" {{ 'selected' if filters.make == m }}>{{ m }}</option>{% endfor %}
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="body_type">Body type</label>
-            <select id="body_type" name="body_type">
-              <option value="">Any body type</option>
-              {% for b in body_types %}<option value="{{ b }}" {{ 'selected' if filters.body_type == b }}>{{ b|capitalize }}</option>{% endfor %}
-            </select>
-          </div>
-          <div class="filter-group">
-            <label for="condition">Condition</label>
-            <select id="condition" name="condition">
-              <option value="">New or used</option>
-              <option value="new" {{ 'selected' if filters.condition == 'new' }}>New</option>
-              <option value="used" {{ 'selected' if filters.condition == 'used' }}>Used</option>
-            </select>
-          </div>
-          <div class="filter-group">
-            <label>Price range (CFA)</label>
-            <div class="filter-range">
-              <input type="number" name="min_price" value="{{ filters.min_price or '' }}" placeholder="Min">
-              <input type="number" name="max_price" value="{{ filters.max_price or '' }}" placeholder="Max">
+      <aside class="filters" aria-labelledby="filters-heading">
+        <details class="filters-panel" open>
+          <summary class="filters-toggle">Filter Vehicles</summary>
+          <h3 id="filters-heading">Find Your Car</h3>
+          <p class="filters-note">Refine the inventory by make, body type, condition and price.</p>
+          <form id="filter-form" method="get" role="search" aria-label="Filter vehicle inventory">
+            <div class="filter-group">
+              <label for="q">Search</label>
+              <input type="text" id="q" name="q" value="{{ filters.q }}" placeholder="Search Toyota, Mercedes, Corolla…" autocomplete="off">
             </div>
-          </div>
-          <button class="btn btn-primary btn-block" type="submit">Apply filters</button>
-        </form>
+            <div class="filter-group">
+              <label for="make">Make</label>
+              <select id="make" name="make">
+                <option value="">All Makes</option>
+                {% for m in makes %}<option value="{{ m }}" {{ 'selected' if filters.make == m }}>{{ m }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="body_type">Body type</label>
+              <select id="body_type" name="body_type">
+                <option value="">All Body Types</option>
+                {% for b in body_types %}<option value="{{ b }}" {{ 'selected' if filters.body_type == b }}>{{ b|capitalize }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="condition">Condition</label>
+              <select id="condition" name="condition">
+                <option value="">All Conditions</option>
+                <option value="new" {{ 'selected' if filters.condition == 'new' }}>New Cars</option>
+                <option value="used" {{ 'selected' if filters.condition == 'used' }}>Used Cars</option>
+              </select>
+            </div>
+            <fieldset class="filter-group" style="border:0; padding:0; margin:0;">
+              <legend style="padding:0;">Price range (CFA)</legend>
+              <div class="filter-range">
+                <label for="min_price" class="sr-only">Minimum price in CFA</label>
+                <input type="number" id="min_price" name="min_price" value="{{ filters.min_price or '' }}" placeholder="Min" inputmode="numeric" min="0" step="1">
+                <label for="max_price" class="sr-only">Maximum price in CFA</label>
+                <input type="number" id="max_price" name="max_price" value="{{ filters.max_price or '' }}" placeholder="Max" inputmode="numeric" min="0" step="1">
+              </div>
+            </fieldset>
+            <div class="filters-actions">
+              <button class="btn btn-primary btn-block" type="submit">Show Matching Cars</button>
+              <a class="filters-clear" href="{{ url_for('store.browse') }}">Clear filters</a>
+            </div>
+          </form>
+        </details>
       </aside>
 
       <div>
         <div class="results-bar">
-          <span>{{ total }} result{{ 's' if total != 1 }}</span>
+          <span class="results-count">{{ total }} vehicle{{ 's' if total != 1 }} found<small>Matching your current search</small></span>
           <form method="get" id="sort-form">
             {% for k, v in filters.items() if k != 'sort' and v %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
-            <select name="sort" onchange="this.form.submit()">
-              <option value="newest" {{ 'selected' if filters.sort == 'newest' }}>Newest first</option>
+            <label for="sort" class="sr-only">Sort vehicles</label>
+            <select id="sort" name="sort" onchange="this.form.submit()">
+              <option value="newest" {{ 'selected' if filters.sort == 'newest' }}>Newest Listed</option>
               <option value="price_asc" {{ 'selected' if filters.sort == 'price_asc' }}>Price: Low to High</option>
               <option value="price_desc" {{ 'selected' if filters.sort == 'price_desc' }}>Price: High to Low</option>
               <option value="year_desc" {{ 'selected' if filters.sort == 'year_desc' }}>Newest Model Year</option>
             </select>
+            <noscript><button class="btn btn-outline" type="submit">Sort</button></noscript>
           </form>
         </div>
 
@@ -70,17 +202,86 @@
           {% for car in cars %}
             {% include "store/components/car_card.html" %}
           {% else %}
-            <p>No cars match those filters — try widening your search.</p>
+            <div class="browse-empty">
+              <h3>No vehicles match your current search.</h3>
+              <p>Try removing a filter, increasing your price range or searching for another make or model.</p>
+              <p><a class="btn btn-primary" href="{{ url_for('store.browse') }}">Clear filters</a></p>
+            </div>
           {% endfor %}
         </div>
 
         {% if total > per_page %}
-        <div class="pagination">
+        <nav class="pagination" aria-label="Vehicle inventory pages">
           {% for p in range(1, ((total - 1) // per_page) + 2) %}
-            <a href="?{% for k, v in filters.items() if v %}{{ k }}={{ v }}&{% endfor %}page={{ p }}" class="{{ 'active' if p == page }}">{{ p }}</a>
+            <a href="?{% for k, v in filters.items() if v %}{{ k }}={{ v }}&{% endfor %}page={{ p }}" class="{{ 'active' if p == page }}" {{ 'aria-current=page' if p == page }} aria-label="Page {{ p }}">{{ p }}</a>
           {% endfor %}
-        </div>
+        </nav>
         {% endif %}
+
+        <section class="browse-info" aria-labelledby="inventory-heading">
+          <h2 id="inventory-heading">Shop Our Vehicle Inventory</h2>
+          <p>Browse the latest vehicles available from {{ business_name }}. Use the filters to narrow your search
+            by make, body type, condition and price, then open a vehicle listing to explore its available details.</p>
+
+          <h3 style="margin-top:22px;">Browse by category</h3>
+          <ul class="quick-links">
+            <li><a href="{{ url_for('store.browse') }}?body_type=sedan">Sedans</a></li>
+            <li><a href="{{ url_for('store.browse') }}?body_type=suv">SUVs</a></li>
+            <li><a href="{{ url_for('store.browse') }}?body_type=pickup">Pickup Trucks</a></li>
+            <li><a href="{{ url_for('store.browse') }}?body_type=hatchback">Hatchbacks</a></li>
+            <li><a href="{{ url_for('store.browse') }}?body_type=van">Vans</a></li>
+            <li><a href="{{ url_for('store.browse') }}?condition=new">New Cars</a></li>
+            <li><a href="{{ url_for('store.browse') }}?condition=used">Used Cars</a></li>
+          </ul>
+        </section>
+
+        <section class="browse-info" aria-labelledby="local-heading">
+          <h2 id="local-heading">Cars for Sale in Douala, Cameroon</h2>
+          <p>Shopping for cars for sale in Douala is simpler when everything sits in one place. This page brings
+            together the vehicles currently published by {{ business_name }}, so you can compare options side by
+            side instead of travelling between lots. Search by make or model, filter by body type to focus on
+            sedans, SUVs, pickups, hatchbacks or vans, and set a minimum and maximum price so you only see
+            vehicles that fit your budget.</p>
+          <p>The condition filter separates new arrivals from used cars in Cameroon, which helps if you already
+            know which direction you're heading. Once a listing catches your eye, open it to review the details
+            we have on record, then get in touch to ask questions or arrange the next step. Whether you're
+            comparing vehicles for sale in Cameroon for the first time or replacing a car you've had for years,
+            the goal is the same — enough information up front to make a decision you're comfortable with.</p>
+        </section>
+
+        <section class="browse-faq" aria-labelledby="faq-heading">
+          <h2 id="faq-heading">Frequently Asked Questions</h2>
+          <details>
+            <summary><h3>How can I find cars for sale in Douala?</h3></summary>
+            <p>Use the search field and the filters on this page to narrow the inventory by make, body type,
+              condition and price. Each result links through to that vehicle's listing.</p>
+          </details>
+          <details>
+            <summary><h3>Can I search for a specific car make or model?</h3></summary>
+            <p>Yes. Type a make or model into the search field — for example a brand name or a model name — and
+              the inventory will be filtered to matching vehicles.</p>
+          </details>
+          <details>
+            <summary><h3>Can I filter cars by price?</h3></summary>
+            <p>Yes. Enter a minimum price, a maximum price, or both, and only vehicles within that range will be
+              shown.</p>
+          </details>
+          <details>
+            <summary><h3>Can I choose between new and used cars?</h3></summary>
+            <p>Yes. The condition filter lets you view new vehicles, used vehicles, or leave it unset to see
+              both together.</p>
+          </details>
+          <details>
+            <summary><h3>Can I filter by body type?</h3></summary>
+            <p>Yes. The body type options are built from the vehicles currently published, and typically include
+              sedans, SUVs, pickups, hatchbacks and vans.</p>
+          </details>
+          <details>
+            <summary><h3>How often is the inventory updated?</h3></summary>
+            <p>This page reflects the vehicles currently published on the website. As listings are added or
+              removed, what you see here changes accordingly.</p>
+          </details>
+        </section>
       </div>
     </div>
   </div>

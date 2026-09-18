@@ -1,15 +1,107 @@
 {% extends "store/base.html" %}
+
+{# ============================================================
+   OPTIONAL SEO BLOCKS
+   These only render if store/base.html defines matching
+   {% block %} tags (title, meta_description, canonical, og,
+   structured_data). If base.html does not define them, Jinja2
+   silently ignores them — nothing breaks either way.
+   ============================================================ #}
+
+{% block title %}Cars for Sale in Douala, Cameroon | {{ business_name }}{% endblock %}
+
+{% block meta_description %}Shop quality new and used cars for sale in Douala, Cameroon. Browse available vehicles, compare options, contact us on WhatsApp and arrange a test drive with {{ business_name }}.{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "AutoDealer",
+  "name": "{{ business_name }}",
+  "url": "{{ request.url_root if request is defined else '' }}",
+  "areaServed": {
+    "@type": "City",
+    "name": "Douala"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What cars do you have for sale in Douala?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Our current inventory is displayed on the site and can be filtered by make, condition and body type."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I contact you through WhatsApp?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, you can reach our team on WhatsApp directly from any vehicle listing or the homepage to ask about pricing and availability."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I schedule a test drive?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "You can contact us through the website or WhatsApp to arrange a test drive for eligible vehicles."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I buy a car online?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Browse the lot, select a vehicle, and check out online. You can pay in full, pay a deposit, or pay on delivery."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you sell new and used cars?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, our inventory includes both new and used vehicles, which you can filter using the condition selector."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Where are you located?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "We serve customers in Douala, Cameroon."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Do you provide an invoice?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes, an itemized invoice is generated instantly when you place an order and can be tracked from your account."
+      }
+    }
+  ]
+}
+</script>
+{% endblock %}
+
 {% block content %}
 
 <section class="hp-hero">
   <div class="hp-hero-left">
     <span class="eyebrow">Verified inventory &middot; Douala, Cameroon</span>
-    <h1>Buy your next car <em>online</em>, without the guesswork.</h1>
+    <h1>Buy Quality Cars in Douala, Cameroon — <em>Online</em>, Without the Guesswork.</h1>
     <p class="lead">Every vehicle on {{ business_name }} is inspected, priced transparently, and ready for a
-      test drive. Browse the lot, chat with our AI assistant or on WhatsApp, and check out online — pay now
-      or pay on delivery, your choice.</p>
+      test drive. Browse verified cars for sale in Douala, chat with our AI assistant or on WhatsApp, and
+      check out online — pay now or pay on delivery, your choice.</p>
     <div class="hero-actions">
-      <a class="btn btn-primary" href="{{ url_for('store.browse') }}">Browse the Lot</a>
+      <a class="btn btn-primary" href="{{ url_for('store.browse') }}">Browse Cars for Sale</a>
       <a class="btn btn-outline-light" href="#" data-wa-button data-car-slug="">Chat on WhatsApp</a>
     </div>
     <div class="hero-stats">
@@ -22,25 +114,31 @@
     </div>
   </div>
   <div class="hp-hero-right">
-    <div class="hero-img-cell big"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80" alt="Featured car"></div>
-    <div class="hero-img-cell"><img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=500&q=80" alt="SUV on the lot"></div>
-    <div class="hero-img-cell"><img src="https://images.unsplash.com/photo-1502877338535-766e1452684a?w=500&q=80" alt="Sedan on the lot"></div>
+    <div class="hero-img-cell big"><img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=800&q=80" alt="Featured car for sale in Douala, Cameroon" loading="eager"></div>
+    <div class="hero-img-cell"><img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=500&q=80" alt="Quality SUV for sale in Douala, Cameroon" loading="lazy"></div>
+    <div class="hero-img-cell"><img src="https://images.unsplash.com/photo-1502877338535-766e1452684a?w=500&q=80" alt="Sedan available for sale in Cameroon" loading="lazy"></div>
   </div>
 </section>
 
 <div class="wrap">
-  <form class="search-bar" action="{{ url_for('store.browse') }}" method="get">
-    <input type="text" name="q" placeholder="Search make or model, e.g. Toyota Corolla">
-    <select name="make">
-      <option value="">Any make</option>
+  <form class="search-bar" action="{{ url_for('store.browse') }}" method="get" aria-label="Search vehicle inventory">
+    <label for="hp-search-q" class="sr-only">Search by make or model</label>
+    <input id="hp-search-q" type="text" name="q" placeholder="Search by make or model — e.g. Toyota Corolla">
+
+    <label for="hp-search-make" class="sr-only">Filter by make</label>
+    <select id="hp-search-make" name="make">
+      <option value="">All Makes</option>
       {% for m in makes %}<option value="{{ m }}">{{ m }}</option>{% endfor %}
     </select>
-    <select name="condition">
-      <option value="">New or used</option>
+
+    <label for="hp-search-condition" class="sr-only">Filter by condition</label>
+    <select id="hp-search-condition" name="condition">
+      <option value="">New or Used</option>
       <option value="new">New</option>
       <option value="used">Used</option>
     </select>
-    <button class="btn btn-primary" type="submit">Search</button>
+
+    <button class="btn btn-primary" type="submit">Search Cars</button>
   </form>
 </div>
 
@@ -48,33 +146,34 @@
   <div class="wrap">
     <div class="section-head">
       <div>
-        <span class="eyebrow">Shop by Type</span>
-        <h2>Find the right body style</h2>
+        <span class="eyebrow">Shop by Body Type</span>
+        <h2>Find the Right Car for Your Lifestyle</h2>
+        <p class="lead" style="margin-top:.5rem;">Explore sedans, SUVs, pickups, hatchbacks and vans available from our current vehicle inventory in Douala.</p>
       </div>
     </div>
     <div class="category-mosaic">
       <a href="{{ url_for('store.browse') }}?body_type=sedan" class="category-tile reveal">
-        <img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=400&q=70" alt="Sedans">
+        <img src="https://images.unsplash.com/photo-1590362891991-f776e747a588?w=400&q=70" alt="Sedans for sale in Douala, Cameroon" loading="lazy">
         <span>Sedans</span>
       </a>
       <a href="{{ url_for('store.browse') }}?body_type=suv" class="category-tile reveal">
-        <img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=400&q=70" alt="SUVs">
+        <img src="https://images.unsplash.com/photo-1568605117036-5fe5e7bab0b7?w=400&q=70" alt="SUVs for sale in Douala, Cameroon" loading="lazy">
         <span>SUVs</span>
       </a>
       <a href="{{ url_for('store.browse') }}?body_type=pickup" class="category-tile reveal">
-        <img src="https://images.unsplash.com/photo-1594502184342-2e12f877aa73?w=400&q=70" alt="Pickups">
+        <img src="https://images.unsplash.com/photo-1594502184342-2e12f877aa73?w=400&q=70" alt="Pickup trucks for sale in Douala, Cameroon" loading="lazy">
         <span>Pickups</span>
       </a>
       <a href="{{ url_for('store.browse') }}?body_type=hatchback" class="category-tile reveal">
-        <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&q=70" alt="Hatchbacks">
+        <img src="https://images.unsplash.com/photo-1552519507-da3b142c6e3d?w=400&q=70" alt="Hatchbacks for sale in Douala, Cameroon" loading="lazy">
         <span>Hatchbacks</span>
       </a>
       <a href="{{ url_for('store.browse') }}?condition=new" class="category-tile reveal">
-        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&q=70" alt="New Arrivals">
+        <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&q=70" alt="New car arrivals for sale in Douala, Cameroon" loading="lazy">
         <span>New Arrivals</span>
       </a>
       <a href="{{ url_for('store.browse') }}?body_type=van" class="category-tile reveal">
-        <img src="https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=400&q=70" alt="Vans">
+        <img src="https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=400&q=70" alt="Vans for sale in Douala, Cameroon" loading="lazy">
         <span>Vans</span>
       </a>
     </div>
@@ -85,8 +184,9 @@
   <div class="wrap">
     <div class="section-head">
       <div>
-        <span class="eyebrow">Handpicked</span>
-        <h2>Featured this week</h2>
+        <span class="eyebrow">Featured Vehicles</span>
+        <h2>Featured Cars for Sale in Douala</h2>
+        <p class="lead" style="margin-top:.5rem;">Explore selected vehicles from our current inventory. Compare models, specifications and pricing, then contact us to arrange your next step.</p>
       </div>
       <a class="btn btn-outline" href="{{ url_for('store.browse') }}">View all cars →</a>
     </div>
@@ -102,25 +202,105 @@
 
 <section class="section section-alt" id="how-it-works">
   <div class="wrap">
-    <div class="section-head"><div><span class="eyebrow">Process</span><h2>How buying online works</h2></div></div>
+    <div class="section-head"><div><span class="eyebrow">Process</span><h2>How Buying a Car Works</h2></div></div>
     <div class="steps">
-      <div class="step-card"><div class="step-no">01</div><h3>Browse &amp; compare</h3><p>Filter by make, budget, and body type across our full verified inventory.</p></div>
-      <div class="step-card"><div class="step-no">02</div><h3>Ask our assistant</h3><p>Chat on-site or WhatsApp for pricing, financing, or to book a test drive.</p></div>
-      <div class="step-card"><div class="step-no">03</div><h3>Choose how to pay</h3><p>Pay online now (full or a deposit) or pay when your car arrives.</p></div>
-      <div class="step-card"><div class="step-no">04</div><h3>Get your invoice</h3><p>An itemized invoice is generated instantly — track it anytime from your account.</p></div>
+      <div class="step-card"><div class="step-no">01</div><h3>Browse &amp; Compare</h3><p>Explore our available vehicles and filter by make, condition, body type and budget to find options that match your needs.</p></div>
+      <div class="step-card"><div class="step-no">02</div><h3>Ask &amp; Inspect</h3><p>Contact our team through the website or WhatsApp, ask questions, request additional information or arrange a test drive.</p></div>
+      <div class="step-card"><div class="step-no">03</div><h3>Choose Your Payment Option</h3><p>Select the available payment option that works for your purchase, whether paying online or using the available pay-on-delivery process.</p></div>
+      <div class="step-card"><div class="step-no">04</div><h3>Receive Your Invoice</h3><p>Receive an itemized invoice for your order and keep track of your purchase through your account.</p></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="why-choose-us">
+  <div class="wrap">
+    <div class="section-head"><div><span class="eyebrow">Why Choose Us</span><h2>Why Choose {{ business_name }}?</h2></div></div>
+    <div class="steps">
+      <div class="step-card"><h3>Inspected Vehicles</h3><p>Browse vehicles presented with a focus on quality, condition and transparency.</p></div>
+      <div class="step-card"><h3>Transparent Pricing</h3><p>See vehicle pricing clearly so you can make informed purchasing decisions.</p></div>
+      <div class="step-card"><h3>Easy Communication</h3><p>Have questions? Contact our team through WhatsApp or the website.</p></div>
+      <div class="step-card"><h3>Test Drive</h3><p>Arrange a test drive for eligible vehicles before completing your purchase.</p></div>
+      <div class="step-card"><h3>Online Convenience</h3><p>Browse vehicles, compare options and begin your purchase from wherever you are.</p></div>
+      <div class="step-card"><h3>Local Automotive Service</h3><p>Serving customers in Douala and across Cameroon.</p></div>
     </div>
   </div>
 </section>
 
 <section class="section">
   <div class="wrap">
-    <div class="section-head"><div><span class="eyebrow">Just listed</span><h2>Latest arrivals</h2></div></div>
+    <div class="section-head"><div><span class="eyebrow">Just Listed</span><h2>Latest Cars for Sale</h2></div></div>
     <div class="car-grid">
       {% for car in latest %}
         {% include "store/components/car_card.html" %}
       {% else %}
         <p>No cars published yet — add your first listing from the admin dashboard.</p>
       {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="local-seo">
+  <div class="wrap">
+    <div class="section-head"><div><span class="eyebrow">Serving Douala &amp; Beyond</span><h2>Cars for Sale in Douala, Cameroon</h2></div></div>
+    <p class="lead">
+      Looking for cars for sale in Douala? {{ business_name }} brings together a growing selection of used
+      cars in Cameroon and new arrivals in one place, so you can browse, compare and decide without visiting
+      multiple lots. Whether you're after a fuel-efficient sedan for the daily commute, a rugged SUV for
+      longer trips, or a reliable pickup for work, our inventory of vehicles in Douala is organized by make,
+      condition and body type to help you find a good match quickly.
+    </p>
+    <p class="lead">
+      Every listing is meant to give you a clear picture before you commit — so when you're ready to buy a
+      car in Cameroon, you can reach out with confidence. As a car dealership in Douala, we aim to make the
+      process straightforward: browse online, ask questions through WhatsApp or our on-site assistant, and
+      move forward at your own pace, whether that's scheduling a test drive or completing your purchase.
+    </p>
+  </div>
+</section>
+
+<section class="section" id="faq">
+  <div class="wrap">
+    <div class="section-head"><div><span class="eyebrow">Questions</span><h2>Frequently Asked Questions</h2></div></div>
+    <div class="steps">
+      <div class="step-card">
+        <h3>What cars do you have for sale in Douala?</h3>
+        <p>Our current inventory is shown on this site and can be filtered by make, condition and body type using the search tools above.</p>
+      </div>
+      <div class="step-card">
+        <h3>Can I contact you through WhatsApp?</h3>
+        <p>Yes — use the WhatsApp button to ask our team about a specific vehicle, pricing, or the buying process.</p>
+      </div>
+      <div class="step-card">
+        <h3>Can I schedule a test drive?</h3>
+        <p>Contact us through the website or WhatsApp to arrange a test drive for eligible vehicles.</p>
+      </div>
+      <div class="step-card">
+        <h3>Can I buy a car online?</h3>
+        <p>Yes. Browse the lot, select a vehicle, and check out online — you can pay now or choose to pay on delivery.</p>
+      </div>
+      <div class="step-card">
+        <h3>Do you sell new and used cars?</h3>
+        <p>Yes, you can filter between new and used vehicles wherever inventory is available using the condition selector.</p>
+      </div>
+      <div class="step-card">
+        <h3>Where are you located?</h3>
+        <p>We serve customers in Douala, Cameroon.</p>
+      </div>
+      <div class="step-card">
+        <h3>Do you provide an invoice?</h3>
+        <p>Yes — an itemized invoice is generated instantly when you place an order, and you can track it anytime from your account.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt" id="final-cta">
+  <div class="wrap" style="text-align:center;">
+    <h2>Ready to Find Your Next Car?</h2>
+    <p class="lead">Explore our current inventory, compare available vehicles and contact {{ business_name }} when you find the right match.</p>
+    <div class="hero-actions" style="justify-content:center;">
+      <a class="btn btn-primary" href="{{ url_for('store.browse') }}">Browse All Cars</a>
+      <a class="btn btn-outline-light" href="#" data-wa-button data-car-slug="">Chat on WhatsApp</a>
     </div>
   </div>
 </section>
