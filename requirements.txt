@@ -11,3 +11,4 @@ reportlab==4.4.3
 # Optional — only needed if you set ANTHROPIC_API_KEY to route the AI chat
 # widget through Claude instead of the built-in rule-based engine.
 anthropic==0.40.0
+psycopg2-binary==2.9.9
