@@ -10,6 +10,11 @@
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button type="submit" class="btn btn-secondary">Seed 49 Demo Cars</button>
     </form>
+    {% else %}
+    <form method="post" action="{{ url_for('store_admin.repair_visibility') }}" style="display:inline;">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button type="submit" class="btn btn-secondary">Fix "Published" Cars Not Showing on Site</button>
+    </form>
     {% endif %}
     <a href="{{ url_for('store_admin.new_car') }}" class="btn btn-primary">+ Add Car</a>
   </div>

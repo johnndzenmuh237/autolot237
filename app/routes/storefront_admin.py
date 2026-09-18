@@ -134,6 +134,42 @@ def seed_demo():
     return redirect(url_for("store_admin.cars"))
 
 
+@store_admin_bp.route("/cars/repair-visibility", methods=["POST"])
+@login_required
+@admin_required
+def repair_visibility():
+    """One-click fix for cars that show 'Published' here in the admin panel
+    but don't appear on the public storefront. The storefront only shows a
+    car when BOTH CarListing.is_published AND the linked Product.is_active
+    are true — this repairs any product whose is_active ended up false/NULL
+    (which can happen to rows created before a fix, or through any path that
+    didn't set it explicitly) without touching anything else about the car."""
+    from app.models.product import Product
+
+    product_ids = [
+        row[0] for row in
+        db.session.query(Product.id)
+        .join(CarListing, CarListing.product_id == Product.id)
+        .filter(CarListing.is_published.is_(True))
+        .filter(db.or_(Product.is_active.is_(False), Product.is_active.is_(None)))
+        .all()
+    ]
+
+    fixed = 0
+    if product_ids:
+        fixed = (
+            Product.query.filter(Product.id.in_(product_ids))
+            .update({Product.is_active: True}, synchronize_session=False)
+        )
+        db.session.commit()
+
+    if fixed:
+        flash(f"Fixed {fixed} car(s) that were published here but hidden from the storefront.", "success")
+    else:
+        flash("Nothing to fix — every published car is already visible on the storefront.", "info")
+    return redirect(url_for("store_admin.cars"))
+
+
 @store_admin_bp.route("/cars/new", methods=["GET", "POST"])
 @login_required
 @admin_required
@@ -148,6 +184,7 @@ def new_car():
             cost_price=float(form.get("cost_price", 0) or 0),
             min_price=float(form.get("price", 0) or 0),
             max_price=float(form.get("price", 0) or 0),
+            is_active=True,
         )
         db.session.add(product)
         db.session.flush()

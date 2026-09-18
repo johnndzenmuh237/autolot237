@@ -130,7 +130,7 @@ def seed_demo_cars():
         product = Product(
             name=title, category="Cars", sku=None,
             stock_quantity=1, cost_price=price * 0.85,
-            min_price=price, max_price=price,
+            min_price=price, max_price=price, is_active=True,
         )
         db.session.add(product)
         db.session.flush()
