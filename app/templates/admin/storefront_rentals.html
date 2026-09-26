@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% set page_title = "Car Rentals" %}
+{% set page_subtitle = "Manage rentable vehicles, rates and booking requests" %}
+{% block title %}Car Rentals{% endblock %}
+
+{% block content %}
+<div class="grid grid-3 stat-cards">
+  <div class="stat-card">
+    <div class="stat-label">Rental Revenue (confirmed)</div>
+    <div class="stat-value figure">{{ revenue|currency }}</div>
+    <div class="stat-sub">Approved, active &amp; completed bookings</div>
+  </div>
+  <div class="stat-card stat-warn">
+    <div class="stat-label">Pending Requests</div>
+    <div class="stat-value figure">{{ pending_count }}</div>
+    <div class="stat-sub">Awaiting approval</div>
+  </div>
+  <div class="stat-card stat-alt">
+    <div class="stat-label">Active Rentals</div>
+    <div class="stat-value figure">{{ active_count }}</div>
+    <div class="stat-sub">Vehicles currently out</div>
+  </div>
+</div>
+
+<div class="section-head" style="margin-top:26px;">
+  <h2>Rentable Vehicles</h2>
+  <div class="page-actions"><a href="{{ url_for('store_admin.cars') }}" class="btn btn-secondary">Manage Car Listings</a></div>
+</div>
+
+<div class="card" style="padding:16px; margin-bottom:20px;">
+  <p style="opacity:.75; font-size:.88rem; margin:0;">
+    To offer a car for rent, open it from Car Listings and check "List for rent" — or use the quick rate form
+    below on a vehicle already enabled. Rental status (Available / Rented / Unavailable / Maintenance) is
+    updated automatically when a booking is approved or completed, but you can always override it here.
+  </p>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Vehicle</th><th class="num">Daily Rate</th><th class="num">Weekly</th><th class="num">Monthly</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for l in rentable %}
+        <tr>
+          <td>
+            <div class="product-name-cell">
+              <span>{{ l.title }}</span>
+              <span class="product-sku">{{ l.listing_code }}</span>
+            </div>
+          </td>
+          <td class="num figure">{{ l.rental_info.daily_rate|currency }}</td>
+          <td class="num figure">{{ l.rental_info.weekly_rate|currency if l.rental_info.weekly_rate else '—' }}</td>
+          <td class="num figure">{{ l.rental_info.monthly_rate|currency if l.rental_info.monthly_rate else '—' }}</td>
+          <td><span class="stock-pill {{ 'stock-ok' if l.rental_info.rental_status == 'available' else 'stock-low' }}">{{ l.rental_info.rental_status|capitalize }}</span></td>
+          <td class="num">
+            <button class="btn btn-secondary btn-sm" type="button" onclick="document.getElementById('rate-form-{{ l.id }}').classList.toggle('hidden')">Edit Rates</button>
+            <form method="post" action="{{ url_for('store_admin.toggle_rentable', listing_id=l.id) }}" style="display:inline;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <button class="btn btn-secondary btn-sm" type="submit">Remove from Rentals</button>
+            </form>
+          </td>
+        </tr>
+        <tr id="rate-form-{{ l.id }}" class="hidden">
+          <td colspan="6">
+            <form method="post" action="{{ url_for('store_admin.update_rental_rates', listing_id=l.id) }}" class="form-row-grid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px; align-items:end; padding:10px 0;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <div class="form-field"><label>Daily rate</label><input type="number" name="daily_rate" value="{{ l.rental_info.daily_rate }}"></div>
+              <div class="form-field"><label>Weekly rate</label><input type="number" name="weekly_rate" value="{{ l.rental_info.weekly_rate or '' }}"></div>
+              <div class="form-field"><label>Monthly rate</label><input type="number" name="monthly_rate" value="{{ l.rental_info.monthly_rate or '' }}"></div>
+              <div class="form-field"><label>Seats</label><input type="number" name="seats" value="{{ l.rental_info.seats or '' }}"></div>
+              <div class="form-field">
+                <label>Status</label>
+                <select name="rental_status">
+                  {% for s in rental_statuses %}<option value="{{ s }}" {{ 'selected' if l.rental_info.rental_status == s }}>{{ s|capitalize }}</option>{% endfor %}
+                </select>
+              </div>
+              <div style="grid-column:1/-1;"><button class="btn btn-primary btn-sm" type="submit">Save Rate Changes</button></div>
+            </form>
+
+            <details style="margin-top:6px;">
+              <summary style="cursor:pointer; font-size:.85rem; opacity:.8;">Log a maintenance cost for this vehicle</summary>
+              <form method="post" action="{{ url_for('store_admin.add_maintenance_log', listing_id=l.id) }}" class="form-row-grid" style="display:grid; grid-template-columns:repeat(5,1fr); gap:10px; align-items:end; padding:10px 0;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div class="form-field"><label>Date</label><input type="date" name="maintenance_date"></div>
+                <div class="form-field"><label>Type</label><input type="text" name="maintenance_type" placeholder="Oil change"></div>
+                <div class="form-field"><label>Vendor</label><input type="text" name="vendor"></div>
+                <div class="form-field"><label>Cost (CFA)</label><input type="number" name="cost"></div>
+                <div class="form-field"><label>Mileage (km)</label><input type="number" name="mileage_km"></div>
+                <div style="grid-column:1/-1;"><button class="btn btn-secondary btn-sm" type="submit">Add Maintenance Record</button></div>
+              </form>
+            </details>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6"><div class="empty-state"><p>No vehicles are listed for rent yet. Open a car listing and enable "List for rent".</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="section-head" style="margin-top:26px;">
+  <h2>Rental Bookings</h2>
+  <div class="page-actions">
+    <form method="get">
+      <select name="status" onchange="this.form.submit()">
+        <option value="">All Statuses</option>
+        {% for s in booking_statuses %}<option value="{{ s }}" {{ 'selected' if status_filter == s }}>{{ s|capitalize }}</option>{% endfor %}
+      </select>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>Reference</th><th>Vehicle</th><th>Customer</th><th>Dates</th><th class="num">Total</th><th>Status</th><th></th></tr>
+      </thead>
+      <tbody>
+        {% for b in bookings %}
+        <tr>
+          <td>{{ b.reference }}</td>
+          <td>{{ b.car_listing.title if b.car_listing else '—' }}</td>
+          <td>
+            <div class="product-name-cell">
+              <span>{{ b.customer_name }}</span>
+              <span class="product-sku">{{ b.phone }}{{ ' · ' ~ b.email if b.email }}</span>
+            </div>
+          </td>
+          <td>{{ b.start_date.strftime('%d %b') }} – {{ b.end_date.strftime('%d %b %Y') }}</td>
+          <td class="num figure">{{ b.total_price|currency }}</td>
+          <td><span class="stock-pill {{ 'stock-ok' if b.status in ('approved','active','completed') else ('stock-low' if b.status in ('rejected','cancelled') else '') }}">{{ b.status|capitalize }}</span></td>
+          <td class="num">
+            <form method="post" action="{{ url_for('store_admin.update_booking_status', booking_id=b.id) }}" style="display:inline-flex; gap:6px;">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+              <select name="status">
+                {% for s in booking_statuses %}<option value="{{ s }}" {{ 'selected' if b.status == s }}>{{ s|capitalize }}</option>{% endfor %}
+              </select>
+              <button class="btn btn-secondary btn-sm" type="submit">Update</button>
+            </form>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7"><div class="empty-state"><p>No rental bookings yet.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>.hidden { display: none; }</style>
+{% endblock %}

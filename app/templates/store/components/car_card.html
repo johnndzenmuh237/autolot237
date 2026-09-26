@@ -4,6 +4,20 @@
     <div class="car-card-badges">
       {% if car.condition == 'new' %}<span class="badge badge-new">New</span>{% endif %}
       {% if car.is_featured %}<span class="badge badge-sale">Featured</span>{% endif %}
+      {% if car.rental_info and car.rental_info.is_rentable %}<span class="badge" style="background:var(--clr-primary);">Also for Rent</span>{% endif %}
+    </div>
+    {# On-image overlay so a plain photo carries its own name, price and a
+       couple of quick specs — clicking anywhere on the photo opens the
+       full listing for more details. #}
+    <div class="car-card-overlay">
+      <span class="ov-name">{{ car.title }}</span>
+      <span class="ov-meta">
+        <span>{{ "{:,}".format(car.mileage_km) }} km</span>
+        <span>&middot;</span>
+        <span>{{ car.transmission|capitalize }}</span>
+      </span>
+      <span class="ov-price">{{ "{:,.0f}".format(car.price) }} CFA</span>
+      <span class="ov-cta">View Details</span>
     </div>
   </a>
   <div class="car-card-body">

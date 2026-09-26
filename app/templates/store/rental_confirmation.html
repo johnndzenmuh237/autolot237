@@ -1,0 +1,30 @@
+{% extends "store/base.html" %}
+{% block title %}Rental Request {{ booking.reference }} | {{ business_name }}{% endblock %}
+{% block meta_description %}Your rental request has been submitted to {{ business_name }}.{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top:50px;">
+  <div class="wrap" style="max-width:640px;">
+    <div class="store-auth-card" style="padding:36px; text-align:center; max-width:none;">
+      <span class="badge badge-new" style="margin-bottom:16px;">Request Submitted</span>
+      <h1 style="margin-bottom:6px;">Thanks, {{ booking.customer_name.split(' ')[0] }}!</h1>
+      <p style="opacity:.8; margin-bottom:24px;">Your rental request has been received. Our team will confirm availability and reach out on the phone number you provided.</p>
+
+      <table class="spec-table" style="text-align:left;">
+        <tr><td>Reference</td><td>{{ booking.reference }}</td></tr>
+        <tr><td>Vehicle</td><td>{{ booking.car_listing.title if booking.car_listing else '—' }}</td></tr>
+        <tr><td>Pickup date</td><td>{{ booking.start_date.strftime('%d %b %Y') }}</td></tr>
+        <tr><td>Return date</td><td>{{ booking.end_date.strftime('%d %b %Y') }}</td></tr>
+        <tr><td>Nights</td><td>{{ booking.nights }}</td></tr>
+        <tr><td>Estimated total</td><td>{{ "{:,.0f}".format(booking.total_price) }} CFA</td></tr>
+        <tr><td>Status</td><td>{{ booking.status|capitalize }}</td></tr>
+      </table>
+
+      <div class="hero-actions" style="justify-content:center; margin-top:26px;">
+        <a class="btn btn-primary" href="{{ url_for('store.rentals_browse') }}">Browse More Rentals</a>
+        <a class="btn btn-whatsapp" href="#" data-wa-button data-car-slug="">Ask on WhatsApp</a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

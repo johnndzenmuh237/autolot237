@@ -1,0 +1,168 @@
+{% extends "store/base.html" %}
+{% block title %}Car Rental in Douala, Cameroon | {{ business_name }}{% endblock %}
+{% block meta_description %}Rent a car in Douala, Cameroon by the day, week or month. Browse {{ total }} vehicles available for rent at {{ business_name }}, with transparent pricing and no overlapping bookings.{% endblock %}
+
+{% block structured_data %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How do I rent a car in Douala?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Browse the vehicles on this page, open one you like, choose your pickup and return dates, and submit a rental request. Our team confirms availability shortly after."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can two customers book the same car for the same dates?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No. Once a booking is submitted for a vehicle and date range, the system blocks any other request that overlaps those same dates for that vehicle."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is pricing daily, weekly or monthly?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Every vehicle has a daily rate, and many also have discounted weekly or monthly rates shown on the listing."
+      }
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+{% set page_title = "Car Rental in Douala, Cameroon" %}
+{% set page_subtitle = total ~ " vehicle" ~ ('s' if total != 1) ~ " available to rent by the day, week or month." %}
+{% set breadcrumbs = [{"label": "Car Rental"}] %}
+{% include "store/components/page_header.html" %}
+
+<style>
+  .browse-intro { max-width: 62ch; margin: 0 0 22px; opacity: .85; line-height: 1.65; }
+  .filters-panel { border: 0; padding: 0; margin: 0; }
+  .filters-toggle { display: none; }
+  .filters-note { font-size: .86rem; opacity: .7; margin: -4px 0 16px; line-height: 1.5; }
+  .filters-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 14px; }
+  .filters-clear { text-align: center; font-size: .9rem; text-decoration: underline; opacity: .8; }
+  .filters-clear:hover { opacity: 1; }
+  .results-count { font-weight: 600; }
+  .results-count small { display: block; font-weight: 400; font-size: .82rem; opacity: .7; }
+  .browse-empty { padding: 34px 0; max-width: 52ch; }
+  .browse-empty h3 { margin: 0 0 8px; }
+  .browse-info { margin-top: 40px; max-width: 70ch; line-height: 1.7; }
+  #filter-form input:focus-visible,
+  #filter-form select:focus-visible,
+  #sort-form select:focus-visible,
+  .pagination a:focus-visible { outline: 2px solid currentColor; outline-offset: 2px; }
+  .pagination a[aria-current="page"] { font-weight: 700; }
+
+  @media (max-width: 860px) {
+    .filters-toggle {
+      display: block; width: 100%; cursor: pointer; font-weight: 600;
+      padding: 12px 14px; border: 1px solid rgba(128,128,128,.35);
+      border-radius: 10px; list-style: none; margin-bottom: 12px;
+    }
+    .filters-toggle::after { content: "▾"; float: right; }
+    .filters-panel[open] .filters-toggle::after { content: "▴"; }
+    .filters-panel:not([open]) #filter-form { display: none; }
+    #filter-form input, #filter-form select { width: 100%; box-sizing: border-box; }
+    .results-bar { flex-wrap: wrap; gap: 10px; }
+    .browse-layout { grid-template-columns: 1fr; }
+    .filters { position: static; margin-bottom: 24px; }
+  }
+</style>
+
+<section class="section" style="padding-top:44px;">
+  <div class="wrap">
+    <div class="eyebrow">{{ total }} vehicle{{ 's' if total != 1 }} available to rent &middot; <a href="{{ url_for('store.browse') }}" style="text-decoration:underline;">Looking to buy instead?</a></div>
+
+    <p class="browse-intro">Rent a vehicle from {{ business_name }} by the day, week or month. Every vehicle
+      shown here is one of our verified, inspected cars — the same fleet we sell, just available to rent
+      instead. Choose your dates on the listing page and submit a request; our team confirms availability.</p>
+
+    <div class="browse-layout">
+      <aside class="filters" aria-labelledby="filters-heading">
+        <details class="filters-panel" open>
+          <summary class="filters-toggle">Filter Rentals</summary>
+          <h3 id="filters-heading">Find a Car to Rent</h3>
+          <p class="filters-note">Refine by make and body type.</p>
+          <form id="filter-form" method="get" role="search" aria-label="Filter rental vehicles">
+            <div class="filter-group">
+              <label for="q">Search</label>
+              <input type="text" id="q" name="q" value="{{ filters.q }}" placeholder="Search Toyota, Corolla…" autocomplete="off">
+            </div>
+            <div class="filter-group">
+              <label for="make">Make</label>
+              <select id="make" name="make">
+                <option value="">All Makes</option>
+                {% for m in makes %}<option value="{{ m }}" {{ 'selected' if filters.make == m }}>{{ m }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="body_type">Body type</label>
+              <select id="body_type" name="body_type">
+                <option value="">All Body Types</option>
+                {% for b in body_types %}<option value="{{ b }}" {{ 'selected' if filters.body_type == b }}>{{ b|capitalize }}</option>{% endfor %}
+              </select>
+            </div>
+            <div class="filters-actions">
+              <button class="btn btn-primary btn-block" type="submit">Show Matching Rentals</button>
+              <a class="filters-clear" href="{{ url_for('store.rentals_browse') }}">Clear filters</a>
+            </div>
+          </form>
+        </details>
+      </aside>
+
+      <div>
+        <div class="results-bar">
+          <span class="results-count">{{ total }} vehicle{{ 's' if total != 1 }} found<small>Available to rent right now</small></span>
+          <form method="get" id="sort-form">
+            {% for k, v in filters.items() if k != 'sort' and v %}<input type="hidden" name="{{ k }}" value="{{ v }}">{% endfor %}
+            <label for="sort" class="sr-only">Sort rentals</label>
+            <select id="sort" name="sort" onchange="this.form.submit()">
+              <option value="newest" {{ 'selected' if filters.sort == 'newest' }}>Newest Listed</option>
+              <option value="price_asc" {{ 'selected' if filters.sort == 'price_asc' }}>Daily Rate: Low to High</option>
+              <option value="price_desc" {{ 'selected' if filters.sort == 'price_desc' }}>Daily Rate: High to Low</option>
+            </select>
+            <noscript><button class="btn btn-outline" type="submit">Sort</button></noscript>
+          </form>
+        </div>
+
+        <div class="car-grid">
+          {% for car in cars %}
+            {% include "store/components/rental_card.html" %}
+          {% else %}
+            <div class="browse-empty">
+              <h3>No rental vehicles match your current search.</h3>
+              <p>Try removing a filter, or browse our full sales inventory instead.</p>
+              <p><a class="btn btn-primary" href="{{ url_for('store.rentals_browse') }}">Clear filters</a></p>
+            </div>
+          {% endfor %}
+        </div>
+
+        {% if total > per_page %}
+        <nav class="pagination" aria-label="Rental inventory pages">
+          {% for p in range(1, ((total - 1) // per_page) + 2) %}
+            <a href="?{% for k, v in filters.items() if v %}{{ k }}={{ v }}&{% endfor %}page={{ p }}" class="{{ 'active' if p == page }}" {{ 'aria-current=page' if p == page }} aria-label="Page {{ p }}">{{ p }}</a>
+          {% endfor %}
+        </nav>
+        {% endif %}
+
+        <section class="browse-info" aria-labelledby="rental-info-heading">
+          <h2 id="rental-info-heading">How Car Rental Works at {{ business_name }}</h2>
+          <p>Pick a vehicle, choose your pickup and return dates on its listing page, and submit your name and
+            phone number. Once submitted, that date range is held for the vehicle — no one else can book it
+            for overlapping dates while your request is pending. Our team reviews and confirms availability,
+            then reaches out to arrange pickup.</p>
+        </section>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

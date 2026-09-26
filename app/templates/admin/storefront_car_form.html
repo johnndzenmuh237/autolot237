@@ -66,6 +66,23 @@
       <textarea name="gallery_urls" rows="3" placeholder="https://images.unsplash.com/...">{{ listing.gallery|join('\n') if listing else '' }}</textarea>
     </div>
 
+    <div class="card" style="padding:16px; margin:16px 0; background:var(--clr-bg-alt, #f6f6fa);">
+      <h3 style="margin-top:0;">Car Rental</h3>
+      {% set rental = listing.rental_info if listing else None %}
+      <label style="display:flex; align-items:center; gap:8px; margin:10px 0;">
+        <input type="checkbox" name="is_rentable" id="is_rentable_cb" onchange="document.getElementById('rental-fields').style.display = this.checked ? 'grid' : 'none'" {{ 'checked' if rental and rental.is_rentable }}> List this vehicle for rent
+      </label>
+      <div id="rental-fields" class="form-row-grid" style="display:{{ 'grid' if rental and rental.is_rentable else 'none' }}; grid-template-columns:1fr 1fr 1fr 1fr; gap:14px;">
+        <div class="form-field"><label>Daily rate (CFA)</label><input type="number" name="daily_rate" value="{{ rental.daily_rate if rental else '' }}"></div>
+        <div class="form-field"><label>Weekly rate (optional)</label><input type="number" name="weekly_rate" value="{{ rental.weekly_rate if rental and rental.weekly_rate else '' }}"></div>
+        <div class="form-field"><label>Monthly rate (optional)</label><input type="number" name="monthly_rate" value="{{ rental.monthly_rate if rental and rental.monthly_rate else '' }}"></div>
+        <div class="form-field"><label>Seats</label><input type="number" name="seats" value="{{ rental.seats if rental and rental.seats else '' }}"></div>
+      </div>
+      {% if rental %}
+      <p style="font-size:.85rem; opacity:.7; margin:8px 0 0;">Current rental status: <strong>{{ rental.rental_status|capitalize }}</strong> — manage bookings and status from <a href="{{ url_for('store_admin.rentals') }}">Car Rentals</a>.</p>
+      {% endif %}
+    </div>
+
     <label style="display:flex; align-items:center; gap:8px; margin:10px 0;">
       <input type="checkbox" name="is_featured" {{ 'checked' if listing and listing.is_featured }}> Feature on homepage
     </label>

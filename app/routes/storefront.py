@@ -12,6 +12,7 @@ from app.models.product import Product
 from app.models.car import CarListing
 from app.models.lead import Lead
 from app.models.order import Order
+from app.models.rental import RentalInfo, RentalBooking, next_booking_reference
 from app.services.storefront_service import (
     reserve_order, get_or_create_customer, confirm_payment, CheckoutError,
 )
@@ -32,6 +33,20 @@ def _available_query():
     return (
         CarListing.query.join(Product)
         .filter(CarListing.is_published.is_(True), Product.is_active.is_(True), Product.stock_quantity > 0)
+    )
+
+
+def _rentable_query():
+    """Vehicles the business owner has actually turned on for rent, that are
+    also published/active in the normal sales sense — reuses the exact same
+    CarListing/Product data, it just adds the RentalInfo companion row."""
+    return (
+        CarListing.query.join(Product).join(RentalInfo)
+        .filter(
+            Product.is_active.is_(True),
+            CarListing.is_published.is_(True),
+            RentalInfo.is_rentable.is_(True),
+        )
     )
 
 
@@ -62,6 +77,8 @@ def inject_store_globals():
         "social_x": os.environ.get("SOCIAL_X_URL", ""),
         "social_tiktok": os.environ.get("SOCIAL_TIKTOK_URL", ""),
         "business_address": os.environ.get("BUSINESS_ADDRESS", "Bonanjo, Douala, Cameroon"),
+        "business_hours": os.environ.get("BUSINESS_HOURS", "Mon\u2013Sat, 8:00\u201318:00 (WAT)"),
+        "google_maps_url": os.environ.get("GOOGLE_MAPS_URL", ""),
         "logged_in_customer": current_customer(),
         "site_avg_rating": avg_rating,
         "site_review_count": review_count,
@@ -77,7 +94,8 @@ def home():
         featured = _available_query().order_by(CarListing.created_at.desc()).limit(6).all()
     latest = _available_query().order_by(CarListing.created_at.desc()).limit(8).all()
     makes = sorted({c.make for c in _available_query().all()})
-    return render_template("store/home.html", featured=featured, latest=latest, makes=makes)
+    featured_rentals = _rentable_query().filter(RentalInfo.rental_status == "available").order_by(CarListing.created_at.desc()).limit(4).all()
+    return render_template("store/home.html", featured=featured, latest=latest, makes=makes, featured_rentals=featured_rentals)
 
 
 @store_bp.route("/about")
@@ -234,6 +252,145 @@ def car_lead(slug):
         return jsonify({"success": True, "message": "Thanks — our team will reach out shortly."})
     flash("Thanks — our team will reach out shortly.", "success")
     return redirect(url_for("store.car_detail", slug=slug))
+
+
+# ------------------------------------------------------------- rentals ----
+# Car Rental: a fully separate flow from the sales cart/checkout above —
+# nothing here touches CART_KEY, Order, or the checkout process.
+
+@store_bp.route("/rentals")
+def rentals_browse():
+    q = _rentable_query()
+
+    search = request.args.get("q", "").strip()
+    make = request.args.get("make", "").strip()
+    body_type = request.args.get("body_type", "").strip()
+    sort = request.args.get("sort", "newest")
+
+    if search:
+        like = f"%{search}%"
+        q = q.filter(db.or_(CarListing.make.ilike(like), CarListing.model.ilike(like)))
+    if make:
+        q = q.filter(CarListing.make == make)
+    if body_type:
+        q = q.filter(CarListing.body_type == body_type)
+
+    if sort == "price_asc":
+        q = q.order_by(RentalInfo.daily_rate.asc())
+    elif sort == "price_desc":
+        q = q.order_by(RentalInfo.daily_rate.desc())
+    else:
+        q = q.order_by(CarListing.created_at.desc())
+
+    page = request.args.get("page", 1, type=int)
+    per_page = 12
+    total = q.count()
+    cars = q.offset((page - 1) * per_page).limit(per_page).all()
+
+    makes = sorted({c.make for c in _rentable_query().all()})
+    body_types = sorted({c.body_type for c in _rentable_query().all()})
+
+    return render_template(
+        "store/rentals.html", cars=cars, makes=makes, body_types=body_types,
+        total=total, page=page, per_page=per_page,
+        filters=dict(q=search, make=make, body_type=body_type, sort=sort),
+    )
+
+
+@store_bp.route("/rentals/<slug>")
+def rental_detail(slug):
+    listing = CarListing.query.filter_by(slug=slug).first_or_404()
+    if not listing.rental_info or not listing.rental_info.is_rentable:
+        return redirect(url_for("store.rentals_browse"))
+
+    # Existing blocking bookings, so the picker on the page can gray out
+    # dates that are already taken for this vehicle.
+    busy = (
+        RentalBooking.query.filter(
+            RentalBooking.car_listing_id == listing.id,
+            RentalBooking.status.in_(("pending", "approved", "active")),
+        ).all()
+    )
+    busy_ranges = [{"start": b.start_date.isoformat(), "end": b.end_date.isoformat()} for b in busy]
+
+    related = (
+        _rentable_query()
+        .filter(CarListing.id != listing.id)
+        .limit(4).all()
+    )
+
+    return render_template("store/rental_detail.html", car=listing, rental=listing.rental_info, busy_ranges=busy_ranges, related=related)
+
+
+@store_bp.route("/rentals/<slug>/book", methods=["POST"])
+@limiter.limit("10 per minute")
+def rental_book(slug):
+    from datetime import datetime as _dt
+
+    listing = CarListing.query.filter_by(slug=slug).first_or_404()
+    rental = listing.rental_info
+
+    if not rental or not rental.is_bookable:
+        flash("Sorry, this vehicle isn't available for rent right now.", "error")
+        return redirect(url_for("store.rentals_browse"))
+
+    name = request.form.get("customer_name", "").strip()
+    phone = request.form.get("phone", "").strip()
+    email = request.form.get("email", "").strip() or None
+    start_raw = request.form.get("start_date", "").strip()
+    end_raw = request.form.get("end_date", "").strip()
+
+    errors = []
+    start_date = end_date = None
+    if not name:
+        errors.append("Please enter your name.")
+    if not phone:
+        errors.append("Please enter a phone number.")
+    try:
+        start_date = _dt.strptime(start_raw, "%Y-%m-%d").date()
+        end_date = _dt.strptime(end_raw, "%Y-%m-%d").date()
+    except ValueError:
+        errors.append("Please choose a valid start and end date.")
+
+    if start_date and end_date:
+        if end_date < start_date:
+            errors.append("The return date must be after the pickup date.")
+        elif start_date < _dt.utcnow().date():
+            errors.append("The pickup date can't be in the past.")
+        elif RentalBooking.overlaps(listing.id, start_date, end_date):
+            errors.append("Those dates are already booked for this vehicle — please choose different dates.")
+
+    if errors:
+        for e in errors:
+            flash(e, "error")
+        return redirect(url_for("store.rental_detail", slug=slug))
+
+    nights = max((end_date - start_date).days, 1)
+    total_price = rental.rate_for(nights)
+
+    booking = RentalBooking(
+        reference=next_booking_reference(),
+        car_listing_id=listing.id,
+        customer_name=name,
+        phone=phone,
+        email=email,
+        start_date=start_date,
+        end_date=end_date,
+        total_price=total_price,
+        status="pending",
+        notes=request.form.get("notes", "").strip() or None,
+    )
+    db.session.add(booking)
+    db.session.commit()
+
+    flash(f"Rental request {booking.reference} submitted — our team will confirm availability shortly.", "success")
+    return redirect(url_for("store.rental_confirmation", reference=booking.reference))
+
+
+@store_bp.route("/rentals/confirmation/<reference>")
+def rental_confirmation(reference):
+    booking = RentalBooking.query.filter_by(reference=reference).first_or_404()
+    return render_template("store/rental_confirmation.html", booking=booking)
 
 
 # ---------------------------------------------------------------- cart -----
@@ -462,6 +619,7 @@ def sitemap():
     pages = [
         {"loc": url_for("store.home", _external=True), "priority": "1.0"},
         {"loc": url_for("store.browse", _external=True), "priority": "0.9"},
+        {"loc": url_for("store.rentals_browse", _external=True), "priority": "0.9"},
         {"loc": url_for("store.about", _external=True), "priority": "0.7"},
         {"loc": url_for("store.reviews", _external=True), "priority": "0.6"},
         {"loc": url_for("store.legal_privacy", _external=True), "priority": "0.3"},
@@ -473,6 +631,12 @@ def sitemap():
         pages.append({
             "loc": url_for("store.car_detail", slug=car.slug, _external=True),
             "priority": "0.8",
+            "lastmod": (car.updated_at or car.created_at).strftime("%Y-%m-%d"),
+        })
+    for car in _rentable_query().all():
+        pages.append({
+            "loc": url_for("store.rental_detail", slug=car.slug, _external=True),
+            "priority": "0.7",
             "lastmod": (car.updated_at or car.created_at).strftime("%Y-%m-%d"),
         })
 

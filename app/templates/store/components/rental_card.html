@@ -1,0 +1,34 @@
+{% set rental = car.rental_info %}
+<article class="car-card">
+  <a class="car-card-img" href="{{ url_for('store.rental_detail', slug=car.slug) }}">
+    <img src="{{ car.main_image or 'https://images.unsplash.com/photo-1493238792000-8113da705763?w=600&q=80' }}" alt="{{ car.title }} available for rent in Douala" loading="lazy">
+    <div class="car-card-badges">
+      <span class="badge" style="background:var(--clr-primary);">For Rent</span>
+      {% if rental.rental_status != 'available' %}<span class="badge badge-out">{{ rental.rental_status|capitalize }}</span>{% endif %}
+    </div>
+    <div class="car-card-overlay">
+      <span class="ov-name">{{ car.title }}</span>
+      <span class="ov-meta">
+        <span>{{ car.transmission|capitalize }}</span>
+        <span>&middot;</span>
+        <span>{{ car.fuel_type|capitalize }}</span>
+        {% if rental.seats %}<span>&middot;</span><span>{{ rental.seats }} seats</span>{% endif %}
+      </span>
+      <span class="ov-price">{{ "{:,.0f}".format(rental.daily_rate) }} CFA / day</span>
+      <span class="ov-cta">View &amp; Book</span>
+    </div>
+  </a>
+  <div class="car-card-body">
+    <div class="car-card-cat">{{ car.listing_code }} &middot; {{ car.location or 'Douala' }}</div>
+    <h3 class="car-card-name"><a href="{{ url_for('store.rental_detail', slug=car.slug) }}">{{ car.title }}</a></h3>
+    <div class="car-card-meta">
+      <span>{{ car.transmission|capitalize }}</span>
+      <span>{{ car.fuel_type|capitalize }}</span>
+      {% if rental.seats %}<span>{{ rental.seats }} seats</span>{% endif %}
+    </div>
+    <div class="car-card-price">{{ "{:,.0f}".format(rental.daily_rate) }} CFA<small>per day{{ " · " ~ "{:,.0f}".format(rental.weekly_rate) ~ " CFA/wk" if rental.weekly_rate }}</small></div>
+    <div class="car-card-actions">
+      <a class="btn btn-dark btn-sm btn-block" href="{{ url_for('store.rental_detail', slug=car.slug) }}">View &amp; Book</a>
+    </div>
+  </div>
+</article>

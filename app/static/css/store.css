@@ -181,6 +181,23 @@ html { overflow-x: hidden; }
 .car-card-price small { display: block; font-family: var(--font-body); font-weight: 500; color: var(--clr-text-light); font-size: .72rem; }
 .car-card-actions { margin-top: 12px; }
 
+/* On-image overlay: gives a "plain" photo its own name/price/spec content so
+   it reads as clickable even before scrolling to the body copy below it.
+   Always visible (not hover-only) so it works the same on touch devices. */
+.car-card-overlay {
+  position: absolute; left: 0; right: 0; bottom: 0; padding: 34px 14px 12px;
+  background: linear-gradient(to top, rgba(15,15,26,.88) 0%, rgba(15,15,26,.55) 55%, transparent 100%);
+  color: #fff; display: flex; flex-direction: column; gap: 3px; pointer-events: none;
+}
+.car-card-overlay .ov-name { font-family: var(--font-body); font-weight: 700; font-size: .92rem; line-height: 1.25; text-shadow: 0 1px 3px rgba(0,0,0,.4); }
+.car-card-overlay .ov-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: .7rem; font-family: var(--font-mono); color: rgba(255,255,255,.9); }
+.car-card-overlay .ov-price { font-family: var(--font-mono); font-weight: 700; font-size: .88rem; }
+.car-card-overlay .ov-cta {
+  align-self: flex-start; margin-top: 4px; font-size: .68rem; font-weight: 700; letter-spacing: .04em;
+  text-transform: uppercase; padding: 3px 9px; border-radius: var(--radius-full);
+  background: rgba(255,255,255,.16); backdrop-filter: blur(2px);
+}
+
 /* ---------- filters / browse ---------- */
 .browse-layout { display: grid; grid-template-columns: 260px 1fr; gap: 36px; align-items: start; }
 .filters { background: var(--clr-panel); border: 1px solid var(--clr-border); border-radius: var(--radius-xl); padding: 22px; position: sticky; top: 96px; }
@@ -364,6 +381,7 @@ html { overflow-x: hidden; }
   .steps { grid-template-columns: repeat(2, 1fr); }
   .category-mosaic { grid-template-columns: repeat(4, 1fr); }
 }
+.drawer-only { display: none; }
 @media (max-width: 860px) {
   .account-label { display: none; }
   .header-account-link { padding: 6px; }
@@ -372,6 +390,7 @@ html { overflow-x: hidden; }
     transform: translateX(100%); transition: transform .25s ease; z-index: 39; overflow-y: auto; }
   .store-nav a { padding: 14px 0; border-bottom: 1px solid var(--clr-border); font-size: 1rem; }
   .store-nav.open { transform: translateX(0); }
+  .drawer-only { display: block; font-weight: 700; color: var(--clr-accent); }
   .nav-toggle { display: block; }
   .store-header-search { display: none; }
   .search-bar { grid-template-columns: 1fr 1fr; margin-top: 20px; }
@@ -393,5 +412,3 @@ html { overflow-x: hidden; }
   .section { padding: 46px 0; }
   .pay-amount-btns { flex-direction: column; }
 }
-
-.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }

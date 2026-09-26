@@ -1,16 +1,13 @@
 {% extends "store/base.html" %}
 
 {# ============================================================
-   OPTIONAL SEO BLOCKS
-   These only render if store/base.html defines matching
-   {% block %} tags (title, meta_description, canonical, og,
-   structured_data). If base.html does not define them, Jinja2
-   silently ignores them — nothing breaks either way.
+   SEO blocks — title, meta_description and structured_data all
+   exist on store/base.html, so these override it cleanly.
    ============================================================ #}
 
-{% block title %}Cars for Sale in Douala, Cameroon | {{ business_name }}{% endblock %}
+{% block title %}Cars for Sale &amp; Car Rental in Douala, Cameroon | {{ business_name }}{% endblock %}
 
-{% block meta_description %}Shop quality new and used cars for sale in Douala, Cameroon. Browse available vehicles, compare options, contact us on WhatsApp and arrange a test drive with {{ business_name }}.{% endblock %}
+{% block meta_description %}Shop quality new and used cars for sale in Douala, Cameroon, or rent a vehicle by the day, week or month. Browse available vehicles, compare options, contact us on WhatsApp and arrange a test drive with {{ business_name }}.{% endblock %}
 
 {% block structured_data %}
 <script type="application/ld+json">
@@ -36,6 +33,14 @@
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "Our current inventory is displayed on the site and can be filtered by make, condition and body type."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I rent a car instead of buying one?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. Browse our Car Rental section, choose a vehicle and your dates, and submit a rental request — our team confirms availability shortly after."
       }
     },
     {
@@ -96,13 +101,13 @@
 <section class="hp-hero">
   <div class="hp-hero-left">
     <span class="eyebrow">Verified inventory &middot; Douala, Cameroon</span>
-    <h1>Buy Quality Cars in Douala, Cameroon — <em>Online</em>, Without the Guesswork.</h1>
+    <h1>Buy or Rent Quality Cars in Douala, Cameroon — <em>Online</em>, Without the Guesswork.</h1>
     <p class="lead">Every vehicle on {{ business_name }} is inspected, priced transparently, and ready for a
-      test drive. Browse verified cars for sale in Douala, chat with our AI assistant or on WhatsApp, and
-      check out online — pay now or pay on delivery, your choice.</p>
+      test drive. Browse verified cars for sale in Douala, rent a vehicle by the day, week or month, chat with
+      our AI assistant or on WhatsApp, and check out online — pay now or pay on delivery, your choice.</p>
     <div class="hero-actions">
       <a class="btn btn-primary" href="{{ url_for('store.browse') }}">Browse Cars for Sale</a>
-      <a class="btn btn-outline-light" href="#" data-wa-button data-car-slug="">Chat on WhatsApp</a>
+      <a class="btn btn-outline-light" href="{{ url_for('store.rentals_browse') }}">Rent a Car</a>
     </div>
     <div class="hero-stats">
       <div><b>{{ latest|length }}+</b><span>Cars in stock</span></div>
@@ -172,10 +177,30 @@
         <img src="https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400&q=70" alt="New car arrivals for sale in Douala, Cameroon" loading="lazy">
         <span>New Arrivals</span>
       </a>
-      <a href="{{ url_for('store.browse') }}?body_type=van" class="category-tile reveal">
-        <img src="https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=400&q=70" alt="Vans for sale in Douala, Cameroon" loading="lazy">
-        <span>Vans</span>
+      <a href="{{ url_for('store.rentals_browse') }}" class="category-tile reveal">
+        <img src="https://images.unsplash.com/photo-1571607388263-1044f9ea01dd?w=400&q=70" alt="Car rental in Douala, Cameroon" loading="lazy">
+        <span>Car Rental</span>
       </a>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="padding-bottom:0;">
+  <div class="wrap">
+    <div class="section-head">
+      <div>
+        <span class="eyebrow">Need a Car for a Few Days?</span>
+        <h2>Rent a Car in Douala — Daily, Weekly or Monthly</h2>
+        <p class="lead" style="margin-top:.5rem;">Skip the paperwork hassle: pick a vehicle, choose your dates, and submit a request online.</p>
+      </div>
+      <a class="btn btn-outline" href="{{ url_for('store.rentals_browse') }}">View all rentals →</a>
+    </div>
+    <div class="car-grid">
+      {% for car in featured_rentals %}
+        {% include "store/components/rental_card.html" %}
+      {% else %}
+        <p>Rental vehicles are coming soon — check back shortly.</p>
+      {% endfor %}
     </div>
   </div>
 </section>
@@ -202,12 +227,12 @@
 
 <section class="section section-alt" id="how-it-works">
   <div class="wrap">
-    <div class="section-head"><div><span class="eyebrow">Process</span><h2>How Buying a Car Works</h2></div></div>
+    <div class="section-head"><div><span class="eyebrow">Process</span><h2>How Buying (or Renting) a Car Works</h2></div></div>
     <div class="steps">
-      <div class="step-card"><div class="step-no">01</div><h3>Browse &amp; Compare</h3><p>Explore our available vehicles and filter by make, condition, body type and budget to find options that match your needs.</p></div>
+      <div class="step-card"><div class="step-no">01</div><h3>Browse &amp; Compare</h3><p>Explore our available vehicles for sale or for rent, and filter by make, condition, body type and budget to find options that match your needs.</p></div>
       <div class="step-card"><div class="step-no">02</div><h3>Ask &amp; Inspect</h3><p>Contact our team through the website or WhatsApp, ask questions, request additional information or arrange a test drive.</p></div>
-      <div class="step-card"><div class="step-no">03</div><h3>Choose Your Payment Option</h3><p>Select the available payment option that works for your purchase, whether paying online or using the available pay-on-delivery process.</p></div>
-      <div class="step-card"><div class="step-no">04</div><h3>Receive Your Invoice</h3><p>Receive an itemized invoice for your order and keep track of your purchase through your account.</p></div>
+      <div class="step-card"><div class="step-no">03</div><h3>Choose Your Option</h3><p>Buy online with the available payment options, or submit a rental request with your pickup and return dates.</p></div>
+      <div class="step-card"><div class="step-no">04</div><h3>Receive Confirmation</h3><p>Receive an itemized invoice for a purchase, or a confirmed booking reference for a rental, and keep track through your account.</p></div>
     </div>
   </div>
 </section>
@@ -217,10 +242,10 @@
     <div class="section-head"><div><span class="eyebrow">Why Choose Us</span><h2>Why Choose {{ business_name }}?</h2></div></div>
     <div class="steps">
       <div class="step-card"><h3>Inspected Vehicles</h3><p>Browse vehicles presented with a focus on quality, condition and transparency.</p></div>
-      <div class="step-card"><h3>Transparent Pricing</h3><p>See vehicle pricing clearly so you can make informed purchasing decisions.</p></div>
+      <div class="step-card"><h3>Transparent Pricing</h3><p>See vehicle pricing clearly so you can make informed purchasing or rental decisions.</p></div>
       <div class="step-card"><h3>Easy Communication</h3><p>Have questions? Contact our team through WhatsApp or the website.</p></div>
       <div class="step-card"><h3>Test Drive</h3><p>Arrange a test drive for eligible vehicles before completing your purchase.</p></div>
-      <div class="step-card"><h3>Online Convenience</h3><p>Browse vehicles, compare options and begin your purchase from wherever you are.</p></div>
+      <div class="step-card"><h3>Flexible Rentals</h3><p>Rent by the day, week or month — no overlapping bookings, ever.</p></div>
       <div class="step-card"><h3>Local Automotive Service</h3><p>Serving customers in Douala and across Cameroon.</p></div>
     </div>
   </div>
@@ -241,7 +266,7 @@
 
 <section class="section section-alt" id="local-seo">
   <div class="wrap">
-    <div class="section-head"><div><span class="eyebrow">Serving Douala &amp; Beyond</span><h2>Cars for Sale in Douala, Cameroon</h2></div></div>
+    <div class="section-head"><div><span class="eyebrow">Serving Douala &amp; Beyond</span><h2>Cars for Sale &amp; Car Rental in Douala, Cameroon</h2></div></div>
     <p class="lead">
       Looking for cars for sale in Douala? {{ business_name }} brings together a growing selection of used
       cars in Cameroon and new arrivals in one place, so you can browse, compare and decide without visiting
@@ -250,10 +275,11 @@
       condition and body type to help you find a good match quickly.
     </p>
     <p class="lead">
-      Every listing is meant to give you a clear picture before you commit — so when you're ready to buy a
-      car in Cameroon, you can reach out with confidence. As a car dealership in Douala, we aim to make the
-      process straightforward: browse online, ask questions through WhatsApp or our on-site assistant, and
-      move forward at your own pace, whether that's scheduling a test drive or completing your purchase.
+      Not ready to buy? Our car rental fleet lets you rent a vehicle in Douala by the day, week or month,
+      with the same verified vehicles and transparent pricing as the cars we sell. Every listing is meant to
+      give you a clear picture before you commit — so when you're ready to buy or rent a car in Cameroon, you
+      can reach out with confidence. Browse online, ask questions through WhatsApp or our on-site assistant,
+      and move forward at your own pace.
     </p>
   </div>
 </section>
@@ -265,6 +291,10 @@
       <div class="step-card">
         <h3>What cars do you have for sale in Douala?</h3>
         <p>Our current inventory is shown on this site and can be filtered by make, condition and body type using the search tools above.</p>
+      </div>
+      <div class="step-card">
+        <h3>Can I rent a car instead of buying one?</h3>
+        <p>Yes — visit our Car Rental section, pick a vehicle, choose your pickup and return dates, and submit a request. We confirm availability shortly after.</p>
       </div>
       <div class="step-card">
         <h3>Can I contact you through WhatsApp?</h3>
@@ -297,10 +327,10 @@
 <section class="section section-alt" id="final-cta">
   <div class="wrap" style="text-align:center;">
     <h2>Ready to Find Your Next Car?</h2>
-    <p class="lead">Explore our current inventory, compare available vehicles and contact {{ business_name }} when you find the right match.</p>
+    <p class="lead">Explore our current inventory, compare available vehicles, or rent one instead — then contact {{ business_name }} when you find the right match.</p>
     <div class="hero-actions" style="justify-content:center;">
       <a class="btn btn-primary" href="{{ url_for('store.browse') }}">Browse All Cars</a>
-      <a class="btn btn-outline-light" href="#" data-wa-button data-car-slug="">Chat on WhatsApp</a>
+      <a class="btn btn-outline-light" href="{{ url_for('store.rentals_browse') }}">Rent a Car</a>
     </div>
   </div>
 </section>

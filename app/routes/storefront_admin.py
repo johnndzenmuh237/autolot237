@@ -9,6 +9,7 @@ from app.models.product import Product
 from app.models.car import CarListing
 from app.models.order import Order
 from app.models.lead import Lead
+from app.models.rental import RentalInfo, RentalBooking, VehicleMaintenanceLog, RENTAL_STATUSES, BOOKING_STATUSES
 from app.utils.codes import slugify, unique_slug, next_listing_code
 from app.services.storefront_service import confirm_payment, cancel_order, CheckoutError
 
@@ -215,6 +216,20 @@ def new_car():
         )
         listing.set_gallery(gallery)
         db.session.add(listing)
+        db.session.flush()
+
+        if form.get("is_rentable"):
+            rental = RentalInfo(
+                car_listing_id=listing.id,
+                is_rentable=True,
+                daily_rate=float(form.get("daily_rate", 0) or 0),
+                weekly_rate=float(form.get("weekly_rate")) if form.get("weekly_rate") else None,
+                monthly_rate=float(form.get("monthly_rate")) if form.get("monthly_rate") else None,
+                seats=int(form.get("seats")) if form.get("seats") else None,
+                rental_status="available",
+            )
+            db.session.add(rental)
+
         db.session.commit()
         flash(f"{listing.title} published to the storefront.", "success")
         return redirect(url_for("store_admin.cars"))
@@ -258,6 +273,19 @@ def edit_car(listing_id):
             listing.set_gallery(gallery)
             listing.main_image = gallery[0]
 
+        rental = listing.rental_info
+        if form.get("is_rentable"):
+            if not rental:
+                rental = RentalInfo(car_listing_id=listing.id, rental_status="available")
+                db.session.add(rental)
+            rental.is_rentable = True
+            rental.daily_rate = float(form.get("daily_rate", 0) or 0)
+            rental.weekly_rate = float(form.get("weekly_rate")) if form.get("weekly_rate") else None
+            rental.monthly_rate = float(form.get("monthly_rate")) if form.get("monthly_rate") else None
+            rental.seats = int(form.get("seats")) if form.get("seats") else None
+        elif rental:
+            rental.is_rentable = False
+
         db.session.commit()
         flash(f"{listing.title} updated.", "success")
         return redirect(url_for("store_admin.cars"))
@@ -273,6 +301,136 @@ def unpublish_car(listing_id):
     listing.is_published = not listing.is_published
     db.session.commit()
     return redirect(url_for("store_admin.cars"))
+
+
+# --------------------------------------------------------------- rentals ---
+# Car Rentals management — entirely new section, doesn't touch the existing
+# vehicle-management (cars) routes above.
+
+@store_admin_bp.route("/rentals")
+@login_required
+@staff_required
+def rentals():
+    status_filter = request.args.get("status", "")
+    q = RentalBooking.query.order_by(RentalBooking.created_at.desc())
+    if status_filter:
+        q = q.filter_by(status=status_filter)
+    bookings = q.limit(300).all()
+
+    rentable = (
+        CarListing.query.join(RentalInfo)
+        .filter(RentalInfo.is_rentable.is_(True))
+        .order_by(CarListing.created_at.desc()).all()
+    )
+
+    revenue = (
+        db.session.query(db.func.coalesce(db.func.sum(RentalBooking.total_price), 0))
+        .filter(RentalBooking.status.in_(("approved", "active", "completed")))
+        .scalar()
+    )
+    pending_count = RentalBooking.query.filter_by(status="pending").count()
+    active_count = RentalBooking.query.filter_by(status="active").count()
+
+    return render_template(
+        "admin/storefront_rentals.html",
+        bookings=bookings, rentable=rentable, status_filter=status_filter,
+        revenue=revenue, pending_count=pending_count, active_count=active_count,
+        booking_statuses=BOOKING_STATUSES, rental_statuses=RENTAL_STATUSES,
+    )
+
+
+@store_admin_bp.route("/rentals/<int:listing_id>/toggle", methods=["POST"])
+@login_required
+@admin_required
+def toggle_rentable(listing_id):
+    listing = CarListing.query.get_or_404(listing_id)
+    rental = listing.rental_info
+    if not rental:
+        rental = RentalInfo(car_listing_id=listing.id)
+        db.session.add(rental)
+    rental.is_rentable = not rental.is_rentable
+    if rental.is_rentable and not rental.daily_rate:
+        rental.daily_rate = float(request.form.get("daily_rate", 0) or 0)
+    db.session.commit()
+    flash(f"{listing.title} is {'now' if rental.is_rentable else 'no longer'} listed for rent.", "success")
+    return redirect(url_for("store_admin.rentals"))
+
+
+@store_admin_bp.route("/rentals/<int:listing_id>/rates", methods=["POST"])
+@login_required
+@admin_required
+def update_rental_rates(listing_id):
+    listing = CarListing.query.get_or_404(listing_id)
+    rental = listing.rental_info
+    if not rental:
+        flash("Enable this vehicle for rent first.", "error")
+        return redirect(url_for("store_admin.rentals"))
+
+    rental.daily_rate = float(request.form.get("daily_rate", rental.daily_rate) or 0)
+    rental.weekly_rate = float(request.form.get("weekly_rate")) if request.form.get("weekly_rate") else None
+    rental.monthly_rate = float(request.form.get("monthly_rate")) if request.form.get("monthly_rate") else None
+    rental.seats = int(request.form.get("seats")) if request.form.get("seats") else None
+    new_status = request.form.get("rental_status", rental.rental_status)
+    if new_status in RENTAL_STATUSES:
+        rental.rental_status = new_status
+    db.session.commit()
+    flash(f"Rental settings updated for {listing.title}.", "success")
+    return redirect(url_for("store_admin.rentals"))
+
+
+@store_admin_bp.route("/rentals/bookings/<int:booking_id>/status", methods=["POST"])
+@login_required
+@staff_required
+def update_booking_status(booking_id):
+    booking = RentalBooking.query.get_or_404(booking_id)
+    new_status = request.form.get("status", "")
+    if new_status not in BOOKING_STATUSES:
+        flash("Invalid status.", "error")
+        return redirect(url_for("store_admin.rentals"))
+
+    booking.status = new_status
+    # Approving/activating a booking marks the vehicle as rented so it's
+    # obvious at a glance; completing/cancelling frees it up again — but
+    # never overrides a manual "maintenance"/"unavailable" status the owner
+    # set on purpose.
+    rental = booking.car_listing.rental_info if booking.car_listing else None
+    if rental and rental.rental_status not in ("maintenance", "unavailable"):
+        if new_status in ("approved", "active"):
+            rental.rental_status = "rented"
+        elif new_status in ("completed", "cancelled", "rejected"):
+            rental.rental_status = "available"
+
+    db.session.commit()
+    flash(f"Booking {booking.reference} marked {new_status}.", "success")
+    return redirect(url_for("store_admin.rentals"))
+
+
+@store_admin_bp.route("/rentals/<int:listing_id>/maintenance", methods=["POST"])
+@login_required
+@staff_required
+def add_maintenance_log(listing_id):
+    listing = CarListing.query.get_or_404(listing_id)
+    from datetime import datetime as _dt
+
+    date_raw = request.form.get("maintenance_date", "").strip()
+    try:
+        m_date = _dt.strptime(date_raw, "%Y-%m-%d").date()
+    except ValueError:
+        m_date = _dt.utcnow().date()
+
+    log = VehicleMaintenanceLog(
+        car_listing_id=listing.id,
+        maintenance_date=m_date,
+        maintenance_type=request.form.get("maintenance_type", "").strip() or "Other",
+        description=request.form.get("description", "").strip() or None,
+        vendor=request.form.get("vendor", "").strip() or None,
+        cost=float(request.form.get("cost", 0) or 0),
+        mileage_km=int(request.form.get("mileage_km")) if request.form.get("mileage_km") else None,
+    )
+    db.session.add(log)
+    db.session.commit()
+    flash(f"Maintenance record added for {listing.title}.", "success")
+    return redirect(url_for("store_admin.rentals"))
 
 
 # --------------------------------------------------------------- reviews ---

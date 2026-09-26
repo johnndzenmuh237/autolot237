@@ -2,8 +2,6 @@
 {% block title %}Cars for Sale in Douala, Cameroon | {{ business_name }}{% endblock %}
 {% block meta_description %}Browse {{ total }} new and used cars for sale in Douala, Cameroon. Search vehicles by make, model, body type, condition and price at {{ business_name }}.{% endblock %}
 
-{# Optional: only renders if store/base.html defines a `structured_data` block.
-   If the block does not exist in base.html, Jinja2 ignores this silently. #}
 {% block structured_data %}
 <script type="application/ld+json">
 {
@@ -56,6 +54,14 @@
       "acceptedAnswer": {
         "@type": "Answer",
         "text": "This page shows the vehicles currently published on the website. As listings are added or sold, the inventory shown here changes accordingly."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I rent a car instead of buying?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes — visit the Car Rental page to browse vehicles available to rent by the day, week or month."
       }
     }
   ]
@@ -126,7 +132,7 @@
 
 <section class="section" style="padding-top:44px;">
   <div class="wrap">
-    <div class="eyebrow">{{ total }} vehicle{{ 's' if total != 1 }} currently available</div>
+    <div class="eyebrow">{{ total }} vehicle{{ 's' if total != 1 }} currently available &middot; <a href="{{ url_for('store.rentals_browse') }}" style="text-decoration:underline;">Looking to rent instead?</a></div>
 
     <p class="browse-intro">Explore the current selection of new and used cars available from {{ business_name }}.
       Search by make, body type, condition or price to find vehicles that match your needs, then open a listing
@@ -232,6 +238,7 @@
             <li><a href="{{ url_for('store.browse') }}?body_type=van">Vans</a></li>
             <li><a href="{{ url_for('store.browse') }}?condition=new">New Cars</a></li>
             <li><a href="{{ url_for('store.browse') }}?condition=used">Used Cars</a></li>
+            <li><a href="{{ url_for('store.rentals_browse') }}">Car Rental</a></li>
           </ul>
         </section>
 
@@ -280,6 +287,11 @@
             <summary><h3>How often is the inventory updated?</h3></summary>
             <p>This page reflects the vehicles currently published on the website. As listings are added or
               removed, what you see here changes accordingly.</p>
+          </details>
+          <details>
+            <summary><h3>Can I rent a car instead of buying?</h3></summary>
+            <p>Yes — visit the <a href="{{ url_for('store.rentals_browse') }}">Car Rental</a> page to browse
+              vehicles available to rent by the day, week or month.</p>
           </details>
         </section>
       </div>

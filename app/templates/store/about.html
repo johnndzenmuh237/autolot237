@@ -48,6 +48,8 @@
     <p>{{ business_name }} is based in {{ business_address }}. Come see a car in person, or start
       the whole thing from your phone — browse, chat, and check out without ever leaving home.</p>
     <p>Call us at <a href="tel:{{ '+' ~ whatsapp_number if whatsapp_number else '' }}">{{ business_phone }}</a> or email <a href="mailto:{{ business_email }}">{{ business_email }}</a>.</p>
+    {% if business_hours %}<p>Opening hours: {{ business_hours }}</p>{% endif %}
+    {% if google_maps_url %}<p><a href="{{ google_maps_url }}" target="_blank" rel="noopener">Get directions on Google Maps &#8599;</a></p>{% endif %}
     <div class="hero-actions">
       <a class="btn btn-primary" href="{{ url_for('store.browse') }}">Browse the Lot</a>
       <a class="btn btn-outline" href="#" data-wa-button data-car-slug="">Chat on WhatsApp</a>
