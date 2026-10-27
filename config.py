@@ -28,6 +28,9 @@ class Config:
     SECRET_KEY = os.environ.get("SECRET_KEY", "dev-secret-key")
     SQLALCHEMY_DATABASE_URI = _database_uri()
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    # Test connections before use and recycle them: hosted Postgres (Neon)
+    # closes idle connections, which otherwise causes random 500 errors.
+    SQLALCHEMY_ENGINE_OPTIONS = {"pool_pre_ping": True, "pool_recycle": 280}
     CURRENCY_SYMBOL = os.environ.get("CURRENCY_SYMBOL", "CFA")
     LOW_STOCK_DEFAULT_THRESHOLD = int(os.environ.get("LOW_STOCK_DEFAULT_THRESHOLD", 5))
     PERMANENT_SESSION_LIFETIME = timedelta(days=7)

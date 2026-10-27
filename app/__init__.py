@@ -135,4 +135,10 @@ def create_app(config_class=Config):
         from app.utils.helpers import ensure_default_admin
         ensure_default_admin()
 
+        # Gunicorn --preload forks workers AFTER this runs. A Postgres SSL
+        # connection can't be shared across forked processes, so drop the
+        # startup connection here and let each worker open its own.
+        db.session.remove()
+        db.engine.dispose()
+
     return app
