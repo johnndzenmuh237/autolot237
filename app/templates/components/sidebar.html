@@ -14,6 +14,11 @@
         <a class="nav-link {{ 'active' if request.endpoint == 'owner.activity' }}" href="{{ url_for('owner.activity') }}">Activity Log</a>
       </div>
       {% endif %}
+      {% if owner_setup_open %}
+      <div class="nav-group">
+        <a class="nav-link {{ 'active' if request.endpoint == 'owner.setup' }}" href="{{ url_for('owner.setup') }}">Set up Business Owner</a>
+      </div>
+      {% endif %}
       <div class="nav-group">
         {% if current_user.is_owner %}<div class="nav-label">Manager Dashboard (view only)</div>{% endif %}
         <a class="nav-link {{ 'active' if request.endpoint == 'admin.dashboard' }}" href="{{ url_for('admin.dashboard') }}">

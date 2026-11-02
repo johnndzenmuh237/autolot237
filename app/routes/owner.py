@@ -1,5 +1,5 @@
 from datetime import datetime
-from flask import Blueprint, render_template, redirect, url_for, flash, request
+from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_required, current_user
 from app import db
 from app.models.user import User
@@ -7,6 +7,7 @@ from app.models.notification import AuditLog
 from app.services import inventory_service, profit_service, analytics_service
 from app.utils.decorators import owner_required
 from app.utils.notify import log_action, notify_user
+from app.utils.owner_setup import get_unclaimed_owner, owner_setup_available
 
 owner_bp = Blueprint("owner", __name__, url_prefix="/owner")
 
@@ -125,3 +126,49 @@ def change_my_password():
         log_action("updated", "user", current_user.id, "Owner changed own password")
         flash("Your password was changed.", "success")
     return redirect(url_for("owner.managers"))
+
+
+@owner_bp.route("/setup", methods=["GET", "POST"])
+@login_required
+def setup():
+    """First-time Business Owner setup, done by the signed-in Manager.
+    Open only while no owner has ever signed in; then it closes for good."""
+    if current_user.role != "admin":
+        abort(403)
+    if not owner_setup_available():
+        flash("The Business Owner account is already set up.", "info")
+        return redirect(url_for("admin.dashboard"))
+
+    existing = get_unclaimed_owner()
+    if request.method == "POST":
+        full_name = request.form.get("full_name", "").strip() or "Business Owner"
+        username = request.form.get("username", "").strip()
+        password = request.form.get("password", "")
+        confirm = request.form.get("confirm", "")
+        errors = []
+        if not username:
+            errors.append("Username is required.")
+        if len(password) < 8:
+            errors.append("Password must be at least 8 characters.")
+        if password != confirm:
+            errors.append("The two passwords do not match.")
+        clash = User.query.filter_by(username=username).first()
+        if clash and (not existing or clash.id != existing.id):
+            errors.append("That username is already taken.")
+        if errors:
+            for e in errors:
+                flash(e, "error")
+        else:
+            if existing:
+                existing.username, existing.full_name = username, full_name
+                owner = existing
+            else:
+                owner = User(username=username, full_name=full_name, role="owner", position="Business Owner")
+                db.session.add(owner)
+            owner.set_password(password)
+            owner.is_active_account = True
+            db.session.commit()
+            log_action("created", "user", owner.id, f"Business Owner account set up: {username}")
+            flash(f"Business Owner account ready. Sign out, then sign in at /login as '{username}'.", "success")
+            return redirect(url_for("admin.dashboard"))
+    return render_template("owner/setup.html", existing=existing)

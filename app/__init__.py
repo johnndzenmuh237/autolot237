@@ -105,7 +105,15 @@ def create_app(config_class=Config):
     @app.context_processor
     def inject_globals():
         from flask_login import current_user
+        setup_open = False
+        try:
+            if current_user.is_authenticated and current_user.role == "admin":
+                from app.utils.owner_setup import owner_setup_available
+                setup_open = owner_setup_available()
+        except Exception:
+            setup_open = False
         return {
+            "owner_setup_open": setup_open,
             "currency_symbol": app.config["CURRENCY_SYMBOL"],
             "current_user": current_user,
             "ga_measurement_id": app.config.get("GA_MEASUREMENT_ID", ""),

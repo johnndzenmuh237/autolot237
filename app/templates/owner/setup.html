@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% set page_title = "Set up Business Owner" %}
+{% set page_subtitle = "Create the owner login — you can see the password as you type" %}
+{% block title %}Set up Business Owner{% endblock %}
+{% block content %}
+<div class="card" style="max-width:560px;">
+  {% if existing %}
+  <p style="color:var(--ink-muted); margin-bottom:12px;">An owner account (<strong>{{ existing.username }}</strong>) exists but has never signed in. Saving this form sets its password again.</p>
+  {% endif %}
+  <form method="POST" action="{{ url_for('owner.setup') }}">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <div class="form-group"><label for="full_name">Owner full name</label>
+      <input id="full_name" name="full_name" value="{{ existing.full_name if existing else '' }}" placeholder="Business Owner"></div>
+    <div class="form-group"><label for="username">Owner username</label>
+      <input id="username" name="username" value="{{ existing.username if existing else 'owner' }}" required autocomplete="off"></div>
+    <div class="form-group"><label for="password">Password (8+ characters)</label>
+      <input id="password" name="password" type="password" minlength="8" required autocomplete="new-password"></div>
+    <div class="form-group"><label for="confirm">Repeat password</label>
+      <input id="confirm" name="confirm" type="password" minlength="8" required autocomplete="new-password"></div>
+    <button class="btn btn-primary" type="submit">Save owner login</button>
+  </form>
+  <p style="color:var(--ink-muted); font-size:.85rem; margin-top:14px;">Tip: click “Show” to see what you typed. After the owner signs in once, this page closes and the manager can no longer change the owner account.</p>
+</div>
+{% endblock %}
