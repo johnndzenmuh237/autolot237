@@ -5,6 +5,21 @@
     <p class="topbar-subtitle">{{ page_subtitle|default('') }}</p>
   </div>
   <div class="topbar-actions">
+    <button type="button" class="install-btn" id="installAppBtn" hidden aria-label="Install app">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
+      <span>Install app</span>
+    </button>
+    <div class="notif" id="notifRoot" data-api="{{ url_for('notifications.api_unread') }}" data-all="{{ url_for('notifications.history') }}" data-readall="{{ url_for('notifications.read_all') }}">
+      <button type="button" class="notif-bell" id="notifBell" aria-label="Notifications" aria-expanded="false">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span class="notif-count" id="notifCount" hidden>0</span>
+      </button>
+      <div class="notif-panel" id="notifPanel" hidden>
+        <div class="notif-panel-head"><strong>Notifications</strong><button type="button" id="notifReadAll" class="notif-link">Mark all read</button></div>
+        <div id="notifItems" class="notif-items"><p class="notif-empty">Loading...</p></div>
+        <a class="notif-panel-foot" href="{{ url_for('notifications.history') }}">View all notifications</a>
+      </div>
+    </div>
     <span class="topbar-date" id="topbarDate"></span>
   </div>
 </header>

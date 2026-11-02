@@ -1,14 +1,23 @@
 <aside class="sidebar">
   <div class="sidebar-brand">
-    <span class="brand-mark">L</span>
+    <img class="brand-logo" src="{{ url_for('static', filename='images/logo.svg') }}" alt="AutoLot237 logo" width="34" height="34">
     <span class="brand-name">Ledger<em>IQ</em></span>
   </div>
 
   <nav class="sidebar-nav">
-    {% if current_user.is_admin %}
+    {% if current_user.can_view_admin %}
+      {% if current_user.is_owner %}
       <div class="nav-group">
+        <div class="nav-label">Business Owner</div>
+        <a class="nav-link {{ 'active' if request.endpoint == 'owner.dashboard' }}" href="{{ url_for('owner.dashboard') }}">Owner Dashboard</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'owner.managers' }}" href="{{ url_for('owner.managers') }}">Manager Access</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'owner.activity' }}" href="{{ url_for('owner.activity') }}">Activity Log</a>
+      </div>
+      {% endif %}
+      <div class="nav-group">
+        {% if current_user.is_owner %}<div class="nav-label">Manager Dashboard (view only)</div>{% endif %}
         <a class="nav-link {{ 'active' if request.endpoint == 'admin.dashboard' }}" href="{{ url_for('admin.dashboard') }}">
-          <span class="nav-icon">&#9679;</span> Dashboard
+          <span class="nav-icon">&#9679;</span> {{ 'Manager Dashboard' if current_user.is_admin else 'Overview' }}
         </a>
       </div>
 
@@ -96,9 +105,10 @@
       <div class="avatar">{{ current_user.full_name[:1] }}</div>
       <div>
         <div class="sidebar-user-name">{{ current_user.full_name }}</div>
-        <div class="sidebar-user-role">{{ current_user.role|capitalize }}</div>
+        <div class="sidebar-user-role">{{ current_user.role_label }}</div>
       </div>
     </div>
+    <a href="{{ url_for('notifications.history') }}" class="sidebar-logout" style="margin-bottom:8px;">Notification history</a>
     <a href="{{ url_for('auth.logout') }}" class="sidebar-logout">Sign out</a>
   </div>
 </aside>

@@ -1,7 +1,7 @@
 import os
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user, logout_user
 from flask_migrate import Migrate
 from flask_wtf import CSRFProtect
 from flask_limiter import Limiter
@@ -50,6 +50,9 @@ def create_app(config_class=Config):
     from app.routes.storefront_admin import store_admin_bp
     from app.routes.account import account_bp
     from app.routes.attendance import attendance_bp
+    from app.routes.owner import owner_bp
+    from app.routes.notifications import notifications_bp
+    from app.routes.pwa import pwa_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
@@ -63,6 +66,24 @@ def create_app(config_class=Config):
     app.register_blueprint(store_admin_bp)
     app.register_blueprint(account_bp)
     app.register_blueprint(attendance_bp)
+    app.register_blueprint(owner_bp)
+    app.register_blueprint(notifications_bp)
+    app.register_blueprint(pwa_bp)
+
+    # The bell polls every 20s and the PWA files are fetched constantly:
+    # keep them out of the 200/hour default rate limit.
+    limiter.exempt(notifications_bp)
+    limiter.exempt(pwa_bp)
+
+    @app.before_request
+    def enforce_active_account():
+        """A deactivated account (e.g. a replaced manager) loses access at once,
+        even if their browser still holds a 'remember me' cookie."""
+        if request.endpoint and request.endpoint != "static" and current_user.is_authenticated \
+                and not current_user.is_active_account:
+            logout_user()
+            flash("Your account has been deactivated. Contact the business owner.", "error")
+            return redirect(url_for("auth.staff_portal"))
 
     # Only the true JSON/fetch API endpoints (called by JS, not an HTML form)
     # are CSRF-exempt — every real <form> on the storefront now carries a
@@ -134,6 +155,8 @@ def create_app(config_class=Config):
             db.session.rollback()
         from app.utils.helpers import ensure_default_admin
         ensure_default_admin()
+        from app.utils.helpers import ensure_owner_account
+        ensure_owner_account()
 
         # Gunicorn --preload forks workers AFTER this runs. A Postgres SSL
         # connection can't be shared across forked processes, so drop the

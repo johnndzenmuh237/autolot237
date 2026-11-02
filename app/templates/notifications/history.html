@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% set page_title = "Notifications" %}
+{% set page_subtitle = "Everything that happened that concerns you" %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="card">
+  <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+    <form method="POST" action="{{ url_for('notifications.read_all') }}">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="btn btn-secondary btn-sm" type="submit">Mark all as read</button>
+    </form>
+  </div>
+  <div class="notif-list">
+  {% for n in items %}
+    <a class="notif-row {{ '' if n.is_read else 'unread' }}" href="{{ url_for('notifications.open_item', notification_id=n.id) }}">
+      <span class="notif-dot"></span>
+      <span class="notif-body"><strong>{{ n.title }}</strong><span>{{ n.message }}</span></span>
+      <span class="notif-time">{{ n.created_at.strftime('%d %b %Y %H:%M') }}</span>
+    </a>
+  {% else %}
+    <p style="color:var(--ink-muted);">No notifications yet. They appear automatically when something happens.</p>
+  {% endfor %}
+  </div>
+</div>
+{% endblock %}

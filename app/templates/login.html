@@ -4,10 +4,10 @@
 <div class="auth-wrap">
   <div class="auth-card">
     <div class="auth-brand">
-      <span class="brand-mark">L</span>
+      <img src="{{ url_for('static', filename='images/logo.svg') }}" alt="AutoLot237 logo" width="40" height="40" style="border-radius:10px;">
       <span class="brand-name" style="color:var(--ink);">Ledger<em style="color:var(--accent);">IQ</em></span>
     </div>
-    <h2 class="auth-title">Admin sign in</h2>
+    <h2 class="auth-title">Manager / Owner sign in</h2>
     <p class="auth-subtitle">Full access — inventory, sales, analytics, staff, and the storefront.</p>
 
     <form method="POST" action="{{ url_for('auth.login') }}">

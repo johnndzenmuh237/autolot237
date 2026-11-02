@@ -14,7 +14,7 @@ def ensure_default_admin():
 
     if User.query.count() == 0:
         admin = User(
-            full_name="Business Owner",
+            full_name="Manager",
             username="admin",
             email="admin@example.com",
             role="admin",
@@ -25,6 +25,38 @@ def ensure_default_admin():
             db.session.commit()
         except IntegrityError:
             db.session.rollback()
+
+
+def ensure_owner_account():
+    """Rename the old 'Business Owner' manager label, and create the Business
+    Owner account when OWNER_PASSWORD is set in the environment (never uses
+    a built-in default password)."""
+    import os
+    from sqlalchemy.exc import IntegrityError
+    from app import db
+    from app.models.user import User
+
+    try:
+        for u in User.query.filter_by(role="admin", full_name="Business Owner").all():
+            u.full_name = "Manager"
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+
+    password = os.environ.get("OWNER_PASSWORD", "").strip()
+    if not password or User.query.filter_by(role="owner").count() > 0:
+        return
+    username = os.environ.get("OWNER_USERNAME", "owner").strip() or "owner"
+    if User.query.filter_by(username=username).first():
+        return
+    owner = User(full_name=os.environ.get("OWNER_NAME", "Business Owner"), username=username,
+                 role="owner", position="Business Owner")
+    owner.set_password(password)
+    db.session.add(owner)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        db.session.rollback()
 
 
 def get_period_range(period):
