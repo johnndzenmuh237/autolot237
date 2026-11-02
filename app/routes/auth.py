@@ -4,11 +4,14 @@ from datetime import datetime
 from app import db
 from app.models.user import User
 from app.utils.decorators import admin_required
+from app.utils.notify import notify_roles, log_action
 
 auth_bp = Blueprint("auth", __name__)
 
 
 def _dashboard_for(user):
+    if user.role == "owner":
+        return "owner.dashboard"
     if user.is_admin:
         return "admin.dashboard"
     if user.role == "seller":
@@ -17,7 +20,7 @@ def _dashboard_for(user):
 
 
 def _login_route_for(role):
-    return {"admin": "auth.login", "seller": "auth.seller_login", "worker": "auth.worker_login"}.get(role, "auth.staff_portal")
+    return {"admin": "auth.login", "owner": "auth.login", "seller": "auth.seller_login", "worker": "auth.worker_login"}.get(role, "auth.staff_portal")
 
 
 @auth_bp.route("/staff")
@@ -29,7 +32,7 @@ def staff_portal():
 
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
-    """Admin login only. Sellers use /seller-login, workers use /worker-login."""
+    """Manager / Business Owner login. Sellers use /seller-login, workers use /worker-login."""
     if current_user.is_authenticated:
         return redirect(url_for(_dashboard_for(current_user)))
 
@@ -39,15 +42,16 @@ def login():
         user = User.query.filter_by(username=username).first()
 
         if user and user.check_password(password) and user.is_active_account:
-            if user.role != "admin":
+            if user.role not in ("admin", "owner"):
                 flash(f"That's a {user.role} account — please use the {user.role} login instead.", "error")
                 return redirect(url_for(_login_route_for(user.role)))
             login_user(user, remember=True)
+            log_action("login", "user", user.id, f"{user.role_label} signed in")
             flash(f"Welcome back, {user.full_name}.", "success")
             next_page = request.args.get("next")
-            if next_page:
+            if next_page and next_page.startswith("/") and not next_page.startswith("//"):
                 return redirect(next_page)
-            return redirect(url_for("admin.dashboard"))
+            return redirect(url_for(_dashboard_for(user)))
 
         flash("Invalid username or password.", "error")
 
@@ -179,6 +183,9 @@ def register_seller():
         seller.set_password(password)
         db.session.add(seller)
         db.session.commit()
+        log_action("created", "user", seller.id, f"New {role} account: {full_name} ({username})")
+        notify_roles(("owner",), "New employee account", f"{full_name} was added as a {role}.",
+                     link=url_for("admin.employees"), category="employee")
         flash(f"Employee record created for {full_name}.", "success")
         return redirect(url_for("admin.employees"))
 
@@ -196,5 +203,8 @@ def toggle_seller(user_id):
     seller.is_active_account = not seller.is_active_account
     db.session.commit()
     status = "activated" if seller.is_active_account else "deactivated"
+    log_action("updated", "user", seller.id, f"{seller.full_name} {status}")
+    notify_roles(("owner",), "Account status changed", f"{seller.full_name} was {status}.",
+                 link=url_for("admin.employees"), category="employee")
     flash(f"{seller.full_name} has been {status}.", "success")
     return redirect(url_for("admin.employees"))

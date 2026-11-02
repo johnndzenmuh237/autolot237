@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="AutoLot237">
+  <rect width="512" height="512" rx="104" fill="#1A1A2E"/>
+  <path d="M96 330v-45l44-15 50-65h140l55 57 45 13v55z" fill="#D62F4A"/>
+  <path d="M200 220h50v42h-78zM265 220h57l38 42H265z" fill="#FFFFFF"/>
+  <circle cx="170" cy="335" r="40" fill="#1A1A2E"/><circle cx="170" cy="335" r="30" fill="#FFFFFF"/><circle cx="170" cy="335" r="11" fill="#1A1A2E"/>
+  <circle cx="356" cy="335" r="40" fill="#1A1A2E"/><circle cx="356" cy="335" r="30" fill="#FFFFFF"/><circle cx="356" cy="335" r="11" fill="#1A1A2E"/>
+  <rect x="96" y="392" width="334" height="6" rx="3" fill="#D62F4A"/>
+  <text x="263" y="468" text-anchor="middle" font-family="Georgia, 'Playfair Display', serif" font-weight="700" font-size="62" letter-spacing="10" fill="#FFFFFF">237</text>
+</svg>

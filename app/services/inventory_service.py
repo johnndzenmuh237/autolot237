@@ -2,6 +2,7 @@ from app import db
 from app.models.product import Product
 from app.models.inventory import InventoryPurchase
 from app.models.expense import Expense
+from app.utils.notify import notify_roles, log_action
 
 
 def create_product(data):
@@ -17,6 +18,14 @@ def create_product(data):
     )
     db.session.add(product)
     db.session.commit()
+    from flask import url_for
+    log_action("created", "product", product.id, f"{product.name}: stock {product.stock_quantity}, cost {product.cost_price:,.0f}, price {product.min_price:,.0f}-{product.max_price:,.0f}")
+    notify_roles(("seller",), "New product available",
+                 f"{product.name} added: {product.stock_quantity} in stock, sell between "
+                 f"{product.min_price:,.0f} and {product.max_price:,.0f}.",
+                 link=url_for("sales.record"), category="inventory")
+    notify_roles(("owner",), "Product added", f"{product.name} ({product.stock_quantity} units) was added.",
+                 link=url_for("inventory.list_products"), category="inventory")
     return product
 
 
@@ -29,6 +38,13 @@ def update_product(product, data):
     product.max_price = float(data.get("max_price", product.max_price))
     product.low_stock_threshold = int(data.get("low_stock_threshold", product.low_stock_threshold))
     db.session.commit()
+    from flask import url_for
+    log_action("updated", "product", product.id, f"{product.name}: cost {product.cost_price:,.0f}, price {product.min_price:,.0f}-{product.max_price:,.0f}")
+    notify_roles(("seller",), "Product updated",
+                 f"{product.name}: sell between {product.min_price:,.0f} and {product.max_price:,.0f}.",
+                 link=url_for("sales.record"), category="inventory")
+    notify_roles(("owner",), "Product updated", f"{product.name} details were changed.",
+                 link=url_for("inventory.list_products"), category="inventory")
     return product
 
 
@@ -60,6 +76,14 @@ def record_stock_purchase(product, quantity, cost_per_item, note=None, log_expen
         db.session.add(expense)
 
     db.session.commit()
+    from flask import url_for
+    log_action("created", "stock_purchase", purchase.id, f"{quantity} x {product.name} at {cost_per_item:,.0f} (total {total_cost:,.0f})")
+    notify_roles(("seller",), "Stock added",
+                 f"{quantity} more {product.name} now available ({product.stock_quantity} in stock).",
+                 link=url_for("sales.record"), category="inventory")
+    notify_roles(("owner",), "Stock purchase recorded",
+                 f"{quantity} x {product.name} bought for {total_cost:,.0f}.",
+                 link=url_for("expenses.purchases"), category="expense")
     return purchase
 
 

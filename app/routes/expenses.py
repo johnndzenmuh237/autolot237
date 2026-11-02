@@ -4,6 +4,7 @@ from app import db
 from app.models.expense import Expense
 from app.models.inventory import InventoryPurchase
 from app.utils.decorators import admin_required
+from app.utils.notify import notify_roles, log_action
 
 expenses_bp = Blueprint("expenses", __name__, url_prefix="/expenses")
 
@@ -32,6 +33,9 @@ def add_expense():
         expense = Expense(category=category, description=description, amount=amount)
         db.session.add(expense)
         db.session.commit()
+        log_action("created", "expense", expense.id, f"{category}: {description} ({amount:,.0f})")
+        notify_roles(("owner",), "Expense recorded", f"{category}: {description} - {amount:,.0f}",
+                     link=url_for("expenses.list_expenses"), category="expense")
         flash("Expense recorded.", "success")
     except (ValueError, TypeError) as e:
         flash(f"Could not record expense: {e}", "error")

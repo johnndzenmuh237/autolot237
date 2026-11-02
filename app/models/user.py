@@ -41,7 +41,22 @@ class User(UserMixin, db.Model):
 
     @property
     def is_admin(self):
+        """True only for the Manager account (internal role name 'admin')."""
         return self.role == "admin"
+
+    @property
+    def is_owner(self):
+        return self.role == "owner"
+
+    @property
+    def can_view_admin(self):
+        """Manager (full access) or Business Owner (read-only access)."""
+        return self.role in ("admin", "owner")
+
+    @property
+    def role_label(self):
+        return {"admin": "Manager", "owner": "Business Owner",
+                "seller": "Seller", "worker": "Worker"}.get(self.role, self.role.capitalize())
 
     @property
     def is_active(self):

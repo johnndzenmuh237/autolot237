@@ -1,0 +1,24 @@
+.topbar-actions { display:flex; align-items:center; gap:14px; }
+.install-btn { display:inline-flex; align-items:center; gap:6px; padding:8px 12px; border-radius:var(--radius-md); border:1px solid var(--border-strong); background:var(--surface); color:var(--ink); font-weight:600; font-size:.82rem; cursor:pointer; }
+.install-btn:hover { border-color:var(--accent); color:var(--accent); }
+.install-btn[hidden], .notif-count[hidden], .notif-panel[hidden] { display:none; }
+.notif { position:relative; }
+.notif-bell { position:relative; display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; border-radius:50%; border:1px solid var(--border); background:var(--surface); color:var(--ink); cursor:pointer; }
+.notif-bell:hover { border-color:var(--accent); color:var(--accent); }
+.notif-count { position:absolute; top:-4px; right:-4px; min-width:18px; height:18px; padding:0 5px; border-radius:9px; background:var(--accent); color:#fff; font-size:.7rem; font-weight:700; display:flex; align-items:center; justify-content:center; }
+.notif-panel { position:absolute; right:0; top:48px; width:360px; max-width:92vw; background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow-md); z-index:50; overflow:hidden; }
+.notif-panel-head { display:flex; justify-content:space-between; align-items:center; padding:12px 16px; border-bottom:1px solid var(--border); }
+.notif-link { background:none; border:none; color:var(--accent); font-size:.8rem; cursor:pointer; font-weight:600; }
+.notif-items { max-height:380px; overflow-y:auto; }
+.notif-empty { padding:18px; color:var(--ink-muted); font-size:.9rem; }
+.notif-panel-foot { display:block; text-align:center; padding:11px; border-top:1px solid var(--border); font-size:.85rem; font-weight:600; color:var(--accent); }
+.notif-row, .notif-item { display:flex; gap:10px; align-items:flex-start; padding:12px 16px; border-bottom:1px solid var(--border); color:var(--ink); text-decoration:none; }
+.notif-row:hover, .notif-item:hover { background:var(--surface-alt); }
+.notif-row.unread, .notif-item.unread { background:var(--accent-soft); }
+.notif-dot { width:9px; height:9px; border-radius:50%; margin-top:6px; flex:none; background:transparent; }
+.unread .notif-dot { background:var(--accent); }
+.notif-body { display:flex; flex-direction:column; gap:2px; flex:1; font-size:.88rem; }
+.notif-body span { color:var(--ink-muted); }
+.notif-time { color:var(--ink-faint); font-size:.75rem; white-space:nowrap; font-family:var(--font-mono); }
+.brand-logo { border-radius:9px; display:block; }
+@media (max-width:640px) { .topbar-date { display:none; } .install-btn span { display:none; } .notif-panel { position:fixed; right:8px; left:8px; top:64px; width:auto; max-width:none; } }
