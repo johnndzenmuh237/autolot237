@@ -53,6 +53,7 @@ def create_app(config_class=Config):
     from app.routes.owner import owner_bp
     from app.routes.notifications import notifications_bp
     from app.routes.pwa import pwa_bp
+    from app.routes.people import people_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
@@ -69,6 +70,7 @@ def create_app(config_class=Config):
     app.register_blueprint(owner_bp)
     app.register_blueprint(notifications_bp)
     app.register_blueprint(pwa_bp)
+    app.register_blueprint(people_bp)
 
     # The bell polls every 20s and the PWA files are fetched constantly:
     # keep them out of the 200/hour default rate limit.
@@ -161,6 +163,8 @@ def create_app(config_class=Config):
             # created either way. Use `gunicorn --preload` in production
             # to avoid this race entirely (see DEPLOYMENT.md).
             db.session.rollback()
+        from app.utils.db_upgrade import ensure_user_columns
+        ensure_user_columns()
         from app.utils.helpers import ensure_default_admin
         ensure_default_admin()
         from app.utils.helpers import ensure_owner_account

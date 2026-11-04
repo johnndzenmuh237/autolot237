@@ -123,73 +123,28 @@ def logout():
 @login_required
 @admin_required
 def register_seller():
+    from app.models.product import Product
+    from app.utils import people
+    kind = request.values.get("role", "seller")
+    if kind not in ("seller", "worker"):
+        kind = "seller"
+    ctx = dict(kind=kind, products=Product.query.filter_by(is_active=True).order_by(Product.name).all(),
+               departments=people.STAFF_DEPARTMENTS, genders=people.GENDERS, id_types=people.ID_TYPES,
+               employment_types=people.EMPLOYMENT_TYPES, access_levels=people.ACCESS_LEVELS)
     if request.method == "POST":
-        full_name = request.form.get("full_name", "").strip()
-        username = request.form.get("username", "").strip()
-        email = request.form.get("email", "").strip()
-        password = request.form.get("password", "")
-        phone = request.form.get("phone", "").strip()
-        address = request.form.get("address", "").strip()
-        national_id = request.form.get("national_id", "").strip()
-        position = request.form.get("position", "").strip()
-        emergency_contact_name = request.form.get("emergency_contact_name", "").strip()
-        emergency_contact_phone = request.form.get("emergency_contact_phone", "").strip()
-        notes = request.form.get("notes", "").strip()
-        role = request.form.get("role", "seller")
-        if role not in ("seller", "worker"):
-            role = "seller"
-
-        salary_raw = request.form.get("salary", "0")
-        hire_date_raw = request.form.get("hire_date", "")
-
-        errors = []
-        if not full_name or not username or not password:
-            errors.append("Full name, username, and password are required.")
-        if not phone or not address:
-            errors.append("Phone number and address are required for the employee record.")
-        if not position:
-            errors.append("Position is required.")
-        if User.query.filter_by(username=username).first():
-            errors.append("That username is already taken.")
-
-        try:
-            salary = float(salary_raw or 0)
-        except ValueError:
-            errors.append("Salary must be a number.")
-            salary = 0
-
-        hire_date = None
-        if hire_date_raw:
-            try:
-                hire_date = datetime.strptime(hire_date_raw, "%Y-%m-%d").date()
-            except ValueError:
-                errors.append("Hire date must be a valid date.")
-        else:
-            errors.append("Hire date is required.")
-
+        data, errors, uploads = people.parse_person(request.form, request.files, kind)
         if errors:
             for e in errors:
                 flash(e, "error")
-            return render_template("admin/add_employee.html", form=request.form)
-
-        seller = User(
-            full_name=full_name, username=username, email=email or None, role=role,
-            phone=phone, address=address, national_id=national_id or None,
-            position=position, salary=salary, hire_date=hire_date,
-            emergency_contact_name=emergency_contact_name or None,
-            emergency_contact_phone=emergency_contact_phone or None,
-            notes=notes or None,
-        )
-        seller.set_password(password)
-        db.session.add(seller)
-        db.session.commit()
-        log_action("created", "user", seller.id, f"New {role} account: {full_name} ({username})")
-        notify_roles(("owner",), "New employee account", f"{full_name} was added as a {role}.",
-                     link=url_for("admin.employees"), category="employee")
-        flash(f"Employee record created for {full_name}.", "success")
+            return render_template("admin/add_employee.html", form=request.form, **ctx)
+        user = people.create_person(data, uploads, request.form["password"], kind,
+                                    status_active=request.form.get("account_status", "active") == "active")
+        log_action("created", "user", user.id, f"New {kind} account: {user.full_name} ({user.username})")
+        notify_roles(("owner",), "New employee account", f"{user.full_name} was added as a {kind}.",
+                     link=url_for("admin.employee_profile", user_id=user.id), category="employee")
+        flash(f"{kind.capitalize()} {user.full_name} was registered successfully.", "success")
         return redirect(url_for("admin.employees"))
-
-    return render_template("admin/add_employee.html", form={})
+    return render_template("admin/add_employee.html", form=request.form if request.args.get("role") else {}, **ctx)
 
 
 @auth_bp.route("/employees/<int:user_id>/toggle", methods=["POST"])

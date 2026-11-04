@@ -26,6 +26,11 @@ class User(UserMixin, db.Model):
     emergency_contact_name = db.Column(db.String(120), nullable=True)
     emergency_contact_phone = db.Column(db.String(40), nullable=True)
     notes = db.Column(db.Text, nullable=True)
+    date_of_birth = db.Column(db.Date, nullable=True)
+    gender = db.Column(db.String(20), nullable=True)
+    nationality = db.Column(db.String(60), nullable=True)
+    city = db.Column(db.String(80), nullable=True)
+    qualification = db.Column(db.String(120), nullable=True)
 
     sales = db.relationship("Sale", backref="seller", lazy="dynamic")
     payments = db.relationship(

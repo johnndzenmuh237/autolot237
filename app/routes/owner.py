@@ -48,36 +48,28 @@ def activity():
 @owner_required
 def managers():
     """The ONLY records the owner can change: manager login + status."""
+    from app.utils import people
     if request.method == "POST":
-        full_name = request.form.get("full_name", "").strip()
-        username = request.form.get("username", "").strip()
-        password = request.form.get("password", "")
-        replace = request.form.get("replace_current") == "on"
-        errors = []
-        if not full_name or not username:
-            errors.append("Full name and username are required.")
-        if len(password) < 8:
-            errors.append("Password must be at least 8 characters.")
-        if User.query.filter_by(username=username).first():
-            errors.append("That username is already taken.")
+        data, errors, uploads = people.parse_person(request.form, request.files, "manager")
         if errors:
             for e in errors:
                 flash(e, "error")
         else:
+            replace = request.form.get("replace_current") == "on"
             if replace:  # revoke the old manager(s) immediately; no records are touched
                 for old in User.query.filter_by(role="admin", is_active_account=True).all():
                     old.is_active_account = False
                     log_action("deactivated", "user", old.id, f"Manager {old.full_name} replaced")
-            m = User(full_name=full_name, username=username, role="admin",
-                     position="Manager", phone=request.form.get("phone", "").strip() or None)
-            m.set_password(password)
-            db.session.add(m)
-            db.session.commit()
-            log_action("created", "user", m.id, f"New manager account: {full_name} ({username})")
-            flash(f"Manager account created for {full_name}." + (" Previous manager access revoked." if replace else ""), "success")
+            m = people.create_person(data, uploads, request.form["password"], "admin",
+                                     status_active=request.form.get("account_status", "active") == "active")
+            log_action("created", "user", m.id, f"New manager account: {m.full_name} ({m.username})")
+            flash(f"Manager {m.full_name} was registered." + (" Previous manager access revoked." if replace else ""), "success")
             return redirect(url_for("owner.managers"))
     managers_list = User.query.filter_by(role="admin").order_by(User.is_active_account.desc(), User.created_at.desc()).all()
-    return render_template("owner/managers.html", managers=managers_list)
+    return render_template("owner/managers.html", managers=managers_list, form=request.form, kind="manager",
+                           products=[], departments=people.MANAGER_DEPARTMENTS, genders=people.GENDERS,
+                           id_types=people.ID_TYPES, employment_types=people.EMPLOYMENT_TYPES,
+                           access_levels=people.ACCESS_LEVELS)
 
 
 @owner_bp.route("/managers/<int:user_id>/toggle", methods=["POST"])

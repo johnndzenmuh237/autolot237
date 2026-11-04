@@ -1,3 +1,4 @@
+{% from "components/icons.html" import icon %}
 <aside class="sidebar">
   <div class="sidebar-brand">
     <img class="brand-logo" src="{{ url_for('static', filename='images/logo.svg') }}" alt="AutoLot237 logo" width="34" height="34">
@@ -9,97 +10,97 @@
       {% if current_user.is_owner %}
       <div class="nav-group">
         <div class="nav-label">Business Owner</div>
-        <a class="nav-link {{ 'active' if request.endpoint == 'owner.dashboard' }}" href="{{ url_for('owner.dashboard') }}">Owner Dashboard</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'owner.managers' }}" href="{{ url_for('owner.managers') }}">Manager Access</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'owner.activity' }}" href="{{ url_for('owner.activity') }}">Activity Log</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'owner.dashboard' }}" href="{{ url_for('owner.dashboard') }}">{{ icon('shield') }}Owner Dashboard</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'owner.managers' }}" href="{{ url_for('owner.managers') }}">{{ icon('usercog') }}Manager Access</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'owner.activity' }}" href="{{ url_for('owner.activity') }}">{{ icon('pulse') }}Activity Log</a>
       </div>
       {% endif %}
       {% if owner_setup_open %}
       <div class="nav-group">
-        <a class="nav-link {{ 'active' if request.endpoint == 'owner.setup' }}" href="{{ url_for('owner.setup') }}">Set up Business Owner</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'owner.setup' }}" href="{{ url_for('owner.setup') }}">{{ icon('usercog') }}Set up Business Owner</a>
       </div>
       {% endif %}
       <div class="nav-group">
         {% if current_user.is_owner %}<div class="nav-label">Manager Dashboard (view only)</div>{% endif %}
         <a class="nav-link {{ 'active' if request.endpoint == 'admin.dashboard' }}" href="{{ url_for('admin.dashboard') }}">
-          <span class="nav-icon">&#9679;</span> {{ 'Manager Dashboard' if current_user.is_admin else 'Overview' }}
+          {{ icon('grid') }} {{ 'Manager Dashboard' if current_user.is_admin else 'Overview' }}
         </a>
       </div>
 
       <div class="nav-group">
         <div class="nav-label">Inventory</div>
-        <a class="nav-link {{ 'active' if request.endpoint == 'inventory.list_products' }}" href="{{ url_for('inventory.list_products') }}">All Products</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'inventory.add_product' }}" href="{{ url_for('inventory.add_product') }}">Add Product</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'inventory.stock_updates' }}" href="{{ url_for('inventory.stock_updates') }}">Stock Updates</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'inventory.low_stock_alerts' }}" href="{{ url_for('inventory.low_stock_alerts') }}">Low Stock Alerts</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'inventory.list_products' }}" href="{{ url_for('inventory.list_products') }}">{{ icon('box') }}All Products</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'inventory.add_product' }}" href="{{ url_for('inventory.add_product') }}">{{ icon('plus') }}Add Product</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'inventory.stock_updates' }}" href="{{ url_for('inventory.stock_updates') }}">{{ icon('refresh') }}Stock Updates</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'inventory.low_stock_alerts' }}" href="{{ url_for('inventory.low_stock_alerts') }}">{{ icon('alert') }}Low Stock Alerts</a>
       </div>
 
       <div class="nav-group">
         <div class="nav-label">Sales</div>
-        <a class="nav-link {{ 'active' if request.endpoint == 'sales.record' }}" href="{{ url_for('sales.record') }}">Record Sale</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'sales.history' }}" href="{{ url_for('sales.history') }}">Sales History</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'sales.record' }}" href="{{ url_for('sales.record') }}">{{ icon('receipt') }}Record Sale</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'sales.history' }}" href="{{ url_for('sales.history') }}">{{ icon('history') }}Sales History</a>
       </div>
 
       <div class="nav-group">
         <div class="nav-label">Analytics</div>
-        <a class="nav-link {{ 'active' if request.endpoint == 'analytics.daily' }}" href="{{ url_for('analytics.daily') }}">Daily Report</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'analytics.weekly' }}" href="{{ url_for('analytics.weekly') }}">Weekly Report</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'analytics.monthly' }}" href="{{ url_for('analytics.monthly') }}">Monthly Report</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'analytics.profit_analysis' }}" href="{{ url_for('analytics.profit_analysis') }}">Profit Analysis</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'analytics.daily' }}" href="{{ url_for('analytics.daily') }}">{{ icon('chart') }}Daily Report</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'analytics.weekly' }}" href="{{ url_for('analytics.weekly') }}">{{ icon('chart') }}Weekly Report</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'analytics.monthly' }}" href="{{ url_for('analytics.monthly') }}">{{ icon('chart') }}Monthly Report</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'analytics.profit_analysis' }}" href="{{ url_for('analytics.profit_analysis') }}">{{ icon('trend') }}Profit Analysis</a>
       </div>
 
       <div class="nav-group">
         <div class="nav-label">Employees</div>
-        <a class="nav-link {{ 'active' if request.endpoint == 'admin.employees' }}" href="{{ url_for('admin.employees') }}">All Sellers &amp; Workers</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'attendance.roster' }}" href="{{ url_for('attendance.roster') }}">Attendance</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'admin.employees' }}" href="{{ url_for('admin.employees') }}">{{ icon('users') }}All Sellers &amp; Workers</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'attendance.roster' }}" href="{{ url_for('attendance.roster') }}">{{ icon('calendar') }}Attendance</a>
       </div>
 
       <div class="nav-group">
         <div class="nav-label">Expenses</div>
-        <a class="nav-link {{ 'active' if request.endpoint == 'expenses.purchases' }}" href="{{ url_for('expenses.purchases') }}">Product Purchases</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'expenses.list_expenses' }}" href="{{ url_for('expenses.list_expenses') }}">Business Expenses</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'expenses.purchases' }}" href="{{ url_for('expenses.purchases') }}">{{ icon('bag') }}Product Purchases</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'expenses.list_expenses' }}" href="{{ url_for('expenses.list_expenses') }}">{{ icon('wallet') }}Business Expenses</a>
       </div>
 
       <div class="nav-group">
         <a class="nav-link {{ 'active' if request.endpoint == 'ai.insights' }}" href="{{ url_for('ai.insights') }}">
-          <span class="nav-icon">&#9673;</span> AI Business Insights
+          {{ icon('sparkles') }} AI Business Insights
         </a>
       </div>
 
       <div class="nav-group">
         <div class="nav-label">Storefront</div>
-        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.cars' }}" href="{{ url_for('store_admin.cars') }}">Car Listings</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.rentals' }}" href="{{ url_for('store_admin.rentals') }}">Car Rentals</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.orders' }}" href="{{ url_for('store_admin.orders') }}">Website Orders</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.leads' }}" href="{{ url_for('store_admin.leads') }}">Leads (WhatsApp / AI Chat)</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.reviews' }}" href="{{ url_for('store_admin.reviews') }}">Customer Reviews</a>
-        <a class="nav-link" href="{{ url_for('store.home') }}" target="_blank" rel="noopener">View Live Site &#8599;</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.cars' }}" href="{{ url_for('store_admin.cars') }}">{{ icon('car') }}Car Listings</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.rentals' }}" href="{{ url_for('store_admin.rentals') }}">{{ icon('key') }}Car Rentals</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.orders' }}" href="{{ url_for('store_admin.orders') }}">{{ icon('cart') }}Website Orders</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.leads' }}" href="{{ url_for('store_admin.leads') }}">{{ icon('message') }}Leads (WhatsApp / AI Chat)</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.reviews' }}" href="{{ url_for('store_admin.reviews') }}">{{ icon('star') }}Customer Reviews</a>
+        <a class="nav-link" href="{{ url_for('store.home') }}" target="_blank" rel="noopener">{{ icon('external') }}View Live Site &#8599;</a>
       </div>
     {% elif current_user.role == 'seller' %}
       <div class="nav-group">
         <a class="nav-link {{ 'active' if request.endpoint == 'seller.dashboard' }}" href="{{ url_for('seller.dashboard') }}">
-          <span class="nav-icon">&#9679;</span> My Dashboard
+          {{ icon('grid') }} My Dashboard
         </a>
       </div>
 
       <div class="nav-group">
         <div class="nav-label">In-Store Sales</div>
-        <a class="nav-link {{ 'active' if request.endpoint == 'sales.record' }}" href="{{ url_for('sales.record') }}">Record a Sale</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'seller.my_sales' }}" href="{{ url_for('seller.my_sales') }}">My Sales</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'seller.my_performance' }}" href="{{ url_for('seller.my_performance') }}">My Performance</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'attendance.mark' }}" href="{{ url_for('attendance.mark') }}">My Attendance</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'sales.record' }}" href="{{ url_for('sales.record') }}">{{ icon('receipt') }}Record a Sale</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'seller.my_sales' }}" href="{{ url_for('seller.my_sales') }}">{{ icon('receipt') }}My Sales</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'seller.my_performance' }}" href="{{ url_for('seller.my_performance') }}">{{ icon('trend') }}My Performance</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'attendance.mark' }}" href="{{ url_for('attendance.mark') }}">{{ icon('calendar') }}My Attendance</a>
       </div>
 
       <div class="nav-group">
         <div class="nav-label">Storefront</div>
-        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.orders' }}" href="{{ url_for('store_admin.orders') }}">Website Orders</a>
-        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.rentals' }}" href="{{ url_for('store_admin.rentals') }}">Car Rentals</a>
-        <a class="nav-link" href="{{ url_for('store.home') }}" target="_blank" rel="noopener">View Live Site &#8599;</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.orders' }}" href="{{ url_for('store_admin.orders') }}">{{ icon('cart') }}Website Orders</a>
+        <a class="nav-link {{ 'active' if request.endpoint == 'store_admin.rentals' }}" href="{{ url_for('store_admin.rentals') }}">{{ icon('key') }}Car Rentals</a>
+        <a class="nav-link" href="{{ url_for('store.home') }}" target="_blank" rel="noopener">{{ icon('external') }}View Live Site &#8599;</a>
       </div>
     {% else %}
       <div class="nav-group">
         <a class="nav-link {{ 'active' if request.endpoint == 'attendance.mark' }}" href="{{ url_for('attendance.mark') }}">
-          <span class="nav-icon">&#9679;</span> My Attendance
+          {{ icon('calendar') }} My Attendance
         </a>
       </div>
     {% endif %}

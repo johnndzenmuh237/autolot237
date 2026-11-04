@@ -4,6 +4,37 @@
 {% block title %}{{ seller.full_name }}{% endblock %}
 
 {% block content %}
+{% set pr = seller.profile %}
+<div class="card" style="margin-bottom:24px;">
+  <div class="profile-head">
+    <div class="photo-preview">{% if pr and pr.has_photo %}<img src="{{ url_for('people.photo', user_id=seller.id) }}" alt="{{ seller.full_name }}">{% else %}<svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>{% endif %}</div>
+    <div class="grow">
+      <h2 style="margin-bottom:4px;">{{ seller.full_name }}</h2>
+      <div class="muted">{{ seller.position or "Employee" }}{% if pr and pr.department %} &middot; {{ pr.department }}{% endif %}{% if pr and pr.employment_type %} &middot; {{ pr.employment_type }}{% endif %}</div>
+      <div style="margin-top:8px;"><span class="badge {{ 'badge-good' if seller.is_active_account else 'badge-neutral' }}">{{ 'Active' if seller.is_active_account else 'Inactive' }}</span> <span class="badge badge-neutral">{{ seller.role_label }}</span></div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <dl class="detail-list">
+    <div><dt>Date of birth</dt><dd>{{ seller.date_of_birth.strftime('%d %b %Y') if seller.date_of_birth else '—' }}</dd></div>
+    <div><dt>Gender</dt><dd>{{ seller.gender or '—' }}</dd></div>
+    <div><dt>Nationality</dt><dd>{{ seller.nationality or '—' }}</dd></div>
+    <div><dt>City / Country</dt><dd>{{ seller.city or '—' }}{% if pr and pr.country %}, {{ pr.country }}{% endif %}</dd></div>
+    <div><dt>Email</dt><dd>{{ seller.email or '—' }}</dd></div>
+    <div><dt>Phone</dt><dd>{{ seller.phone or '—' }}{% if pr and pr.alt_phone %} &middot; {{ pr.alt_phone }}{% endif %}</dd></div>
+    <div><dt>ID</dt><dd>{{ pr.id_type if pr and pr.id_type else 'ID' }}: {{ seller.national_id or '—' }}{% if pr and pr.has_id_document %} &middot; <a href="{{ url_for('people.id_document', user_id=seller.id) }}" target="_blank" rel="noopener">View scan</a>{% endif %}</dd></div>
+    <div><dt>Qualifications</dt><dd>{{ seller.qualification or '—' }}</dd></div>
+    {% if pr and pr.experience %}<div class="span-2" style="grid-column:1/-1;"><dt>Work experience</dt><dd>{{ pr.experience }}</dd></div>{% endif %}
+    {% if pr and pr.skills %}<div style="grid-column:1/-1;"><dt>Skills</dt><dd>{{ pr.skills }}</dd></div>{% endif %}
+    {% if pr and pr.responsibilities %}<div style="grid-column:1/-1;"><dt>Responsibilities</dt><dd>{{ pr.responsibilities }}</dd></div>{% endif %}
+    {% if pr and pr.access_level %}<div><dt>Access level</dt><dd>{{ pr.access_level }}</dd></div>{% endif %}
+    {% if seller.role == 'seller' and pr %}
+    <div><dt>Monthly sales target</dt><dd>{{ (pr.sales_target or 0)|currency }}</dd></div>
+    <div><dt>Commission rate</dt><dd>{{ pr.commission_rate if pr.commission_rate is not none else '—' }}{% if pr.commission_rate is not none %}%{% endif %}</dd></div>
+    {% endif %}
+  </dl>
+</div>
+
 
 <div class="grid grid-2" style="align-items:start; margin-bottom:24px;">
   <div class="card">

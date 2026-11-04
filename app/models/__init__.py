@@ -11,9 +11,10 @@ from app.models.lead import Lead
 from app.models.review import Review
 from app.models.attendance import Attendance
 from app.models.notification import Notification, AuditLog
+from app.models.profile import UserProfile
 
 __all__ = [
     "User", "Product", "Sale", "InventoryPurchase", "Expense", "AIInsight", "SalaryPayment",
     "CarListing", "Customer", "Order", "OrderItem", "PaymentRecord", "Lead", "Review",
-    "Attendance", "Notification", "AuditLog",
+    "Attendance", "Notification", "AuditLog", "UserProfile",
 ]

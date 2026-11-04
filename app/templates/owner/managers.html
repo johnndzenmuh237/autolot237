@@ -1,22 +1,25 @@
 {% extends "base.html" %}
 {% set page_title = "Manager Access" %}
-{% set page_subtitle = "Create, replace, reset or deactivate the manager account" %}
+{% set page_subtitle = "Register a manager, reset passwords, or revoke access" %}
 {% block title %}Manager Access{% endblock %}
 {% block content %}
+
+<div class="section-head"><h2>Registered Managers</h2><span class="badge badge-neutral">{{ managers|length }} on record</span></div>
 <div class="card">
-  <div class="card-header"><h3>Manager accounts</h3></div>
-  <div class="table-wrap"><table>
-    <thead><tr><th>Name</th><th>Username</th><th>Status</th><th>Created</th><th>Reset password</th><th></th></tr></thead>
+  <div class="table-wrap"><table class="min-720">
+    <thead><tr><th>Manager</th><th>Contact</th><th>ID Number</th><th>Started</th><th>Status</th><th>Reset password</th><th>Access</th><th></th></tr></thead>
     <tbody>
     {% for m in managers %}
       <tr>
-        <td>{{ m.full_name }}</td><td>{{ m.username }}</td>
+        <td><div class="person-cell">{% if m.profile and m.profile.has_photo %}<img class="avatar" src="{{ url_for('people.photo', user_id=m.id) }}" alt="">{% else %}<span class="avatar">{{ m.full_name[:1] }}</span>{% endif %}<div><strong>{{ m.full_name }}</strong><br><span class="muted">@{{ m.username }}</span></div></div></td>
+        <td>{{ m.phone or '-' }}<br><span class="muted break">{{ m.email or '-' }}</span></td>
+        <td>{{ m.national_id or '-' }}</td>
+        <td>{{ m.hire_date.strftime('%d %b %Y') if m.hire_date else (m.created_at.strftime('%d %b %Y') if m.created_at else '-') }}</td>
         <td><span class="badge {{ 'badge-success' if m.is_active_account else 'badge-neutral' }}">{{ 'Active' if m.is_active_account else 'Deactivated' }}</span></td>
-        <td class="figure">{{ m.created_at.strftime('%d %b %Y') if m.created_at }}</td>
         <td>
-          <form method="POST" action="{{ url_for('owner.reset_manager_password', user_id=m.id) }}" style="display:flex; gap:6px;">
+          <form method="POST" action="{{ url_for('owner.reset_manager_password', user_id=m.id) }}" class="inline-form">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <input type="password" name="password" placeholder="New password (8+)" minlength="8" required style="max-width:170px;">
+            <input type="password" name="password" placeholder="New password (8+)" minlength="8" required>
             <button class="btn btn-secondary btn-sm" type="submit">Reset</button>
           </form>
         </td>
@@ -27,41 +30,29 @@
             <button class="btn btn-secondary btn-sm" type="submit">{{ 'Deactivate' if m.is_active_account else 'Reactivate' }}</button>
           </form>
         </td>
+        <td><a class="btn btn-secondary btn-sm" href="{{ url_for('admin.employee_profile', user_id=m.id) }}">Profile</a></td>
       </tr>
-    {% else %}<tr><td colspan="6">No manager accounts yet.</td></tr>{% endfor %}
+    {% else %}<tr><td colspan="8">No manager accounts yet.</td></tr>{% endfor %}
     </tbody>
   </table></div>
-  <p style="color:var(--ink-muted); font-size:.85rem; margin-top:10px;">Deactivating a manager signs them out immediately. All business records stay intact and visible to the next manager.</p>
+  <p class="muted note">Deactivating a manager signs them out immediately. All business records stay intact and are visible to the next manager.</p>
 </div>
 
-<div class="card" style="max-width:680px; margin-top:24px;">
-  <div class="card-header"><h3>Create a new manager</h3></div>
-  <form method="POST" action="{{ url_for('owner.managers') }}">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <div class="form-row">
-      <div class="form-group"><label for="full_name">Full name</label><input id="full_name" name="full_name" required></div>
-      <div class="form-group"><label for="username">Username</label><input id="username" name="username" required></div>
-    </div>
-    <div class="form-row">
-      <div class="form-group"><label for="password">Password (8+ characters)</label><input id="password" name="password" type="password" minlength="8" required></div>
-      <div class="form-group"><label for="phone">Phone (optional)</label><input id="phone" name="phone"></div>
-    </div>
-    <label style="display:flex; gap:8px; align-items:center; margin:8px 0 14px;">
-      <input type="checkbox" name="replace_current"> Replace the current manager (revoke their access immediately)
-    </label>
-    <button class="btn btn-primary" type="submit">Create manager</button>
-  </form>
-</div>
+<div class="section-head"><h2>Register a New Manager</h2></div>
+{% set action = url_for('owner.managers') %}
+{% set submit_label = "Register manager" %}
+{% set cancel_url = none %}
+{% include "components/person_form.html" %}
 
-<div class="card" style="max-width:680px; margin-top:24px;">
-  <div class="card-header"><h3>Change my password</h3></div>
+<div class="section-head"><h2>My Account</h2></div>
+<div class="card form-section" style="max-width:640px;">
   <form method="POST" action="{{ url_for('owner.change_my_password') }}">
     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-    <div class="form-row">
+    <div class="form-grid">
       <div class="form-group"><label for="current_password">Current password</label><input id="current_password" name="current_password" type="password" required></div>
       <div class="form-group"><label for="new_password">New password (8+)</label><input id="new_password" name="new_password" type="password" minlength="8" required></div>
     </div>
-    <button class="btn btn-secondary" type="submit">Change password</button>
+    <div class="form-actions"><button class="btn btn-secondary" type="submit">Change my password</button></div>
   </form>
 </div>
 {% endblock %}

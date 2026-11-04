@@ -6,7 +6,10 @@
 {% block content %}
 <div class="section-head" style="margin-top:0;">
   <h2>All Employees</h2>
-  <a href="{{ url_for('auth.register_seller') }}" class="btn btn-primary">+ Register Employee</a>
+  <div class="form-actions" style="margin:0;">
+    <a href="{{ url_for('auth.register_seller', role='seller') }}" class="btn btn-primary">+ Register Seller</a>
+    <a href="{{ url_for('auth.register_seller', role='worker') }}" class="btn btn-secondary">+ Register Worker</a>
+  </div>
 </div>
 
 <div class="grid grid-3 stat-cards" style="margin-bottom:24px;">
@@ -43,9 +46,12 @@
         {% set pay = payment_status.get(s.id) %}
         <tr>
           <td>
-            <div class="product-name-cell">
-              <span>{{ s.full_name }}</span>
-              <span class="product-sku">@{{ s.username }} · {{ s.phone or "no phone on file" }}</span>
+            <div class="person-cell">
+              {% if s.profile and s.profile.has_photo %}<img class="avatar" src="{{ url_for('people.photo', user_id=s.id) }}" alt="">{% else %}<span class="avatar">{{ s.full_name[:1] }}</span>{% endif %}
+              <div class="product-name-cell">
+                <span>{{ s.full_name }}</span>
+                <span class="product-sku">@{{ s.username }} · {{ s.phone or "no phone on file" }}</span>
+              </div>
             </div>
           </td>
           <td>{{ s.position or "—" }}</td>
