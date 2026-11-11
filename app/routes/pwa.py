@@ -6,11 +6,32 @@ SERVICE_WORKER = r"""
 // AutoLot237 service worker: makes the app installable and keeps static files
 // fast. Pages and API calls always go to the network, so nobody ever sees
 // stale or another user's data.
-const CACHE = "autolot237-static-v1";
+const CACHE = "autolot237-static-v2";
 self.addEventListener("install", (e) => { self.skipWaiting(); });
 self.addEventListener("activate", (e) => {
   e.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))))
     .then(() => self.clients.claim()));
+});
+// ---- Web Push: show a system notification even when the app is closed ----
+self.addEventListener("push", (e) => {
+  let d = {};
+  try { d = e.data ? e.data.json() : {}; } catch (err) { d = { title: "AutoLot237", body: e.data ? e.data.text() : "" }; }
+  e.waitUntil(self.registration.showNotification(d.title || "AutoLot237", {
+    body: d.body || "",
+    icon: "/static/images/icon-192.png",
+    badge: "/static/images/icon-192.png",
+    tag: d.tag || undefined,
+    renotify: !!d.tag,
+    data: { url: d.url || "/" },
+  }));
+});
+self.addEventListener("notificationclick", (e) => {
+  e.notification.close();
+  const target = new URL((e.notification.data && e.notification.data.url) || "/", self.location.origin).href;
+  e.waitUntil(self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((list) => {
+    for (const c of list) { if ("focus" in c) { c.navigate(target).catch(() => {}); return c.focus(); } }
+    return self.clients.openWindow(target);
+  }));
 });
 self.addEventListener("fetch", (e) => {
   const req = e.request;

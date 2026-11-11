@@ -24,6 +24,8 @@ def api_unread():
     latest = _mine().order_by(Notification.created_at.desc()).limit(8).all()
     return jsonify({
         "unread": _mine().filter_by(is_read=False).count(),
+        "latest_id": latest[0].id if latest else 0,
+        "user_id": current_user.id,
         "items": [{
             "id": n.id, "title": n.title, "message": n.message, "is_read": n.is_read,
             "category": n.category, "when": n.created_at.strftime("%d %b %H:%M"),
