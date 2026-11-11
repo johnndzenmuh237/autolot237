@@ -13,6 +13,7 @@
       <div class="notif-panel" id="notifPanel" hidden>
         <div class="notif-panel-head"><strong>Notifications</strong><button type="button" id="notifReadAll" class="notif-link">Mark all read</button></div>
         <div id="notifItems" class="notif-items"><p class="notif-empty">Loading...</p></div>
+        <button type="button" class="notif-enable" id="notifEnable" hidden>Turn on phone alerts</button>
         <a class="notif-panel-foot" href="{{ url_for('notifications.history') }}">View all notifications</a>
       </div>
     </div>

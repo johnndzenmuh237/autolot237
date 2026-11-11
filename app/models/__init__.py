@@ -12,9 +12,11 @@ from app.models.review import Review
 from app.models.attendance import Attendance
 from app.models.notification import Notification, AuditLog
 from app.models.profile import UserProfile
+from app.models.push import AppSetting, PushSubscription
+from app.models.message import StaffMessage, MessageRecipient
 
 __all__ = [
     "User", "Product", "Sale", "InventoryPurchase", "Expense", "AIInsight", "SalaryPayment",
     "CarListing", "Customer", "Order", "OrderItem", "PaymentRecord", "Lead", "Review",
-    "Attendance", "Notification", "AuditLog", "UserProfile",
+    "Attendance", "Notification", "AuditLog", "UserProfile", "AppSetting", "PushSubscription", "StaffMessage", "MessageRecipient",
 ]

@@ -5,7 +5,31 @@
   var countEl = document.getElementById("notifCount"), list = document.getElementById("notifItems");
   var readAll = document.getElementById("notifReadAll");
   var csrf = (document.querySelector('meta[name="csrf-token"]') || {}).content || "";
-  var lastUnread = null;
+  var lastUnread = null, baseline = null, stack = null;
+
+  function toast(n) {
+    if (!stack) { stack = document.createElement("div"); stack.className = "toast-stack"; stack.setAttribute("aria-live", "polite"); document.body.appendChild(stack); }
+    var a = document.createElement("a");
+    a.className = "toast"; a.href = n.open_url;
+    a.innerHTML = '<span><strong>' + esc(n.title) + '</strong><span class="t-msg">' + esc(n.message) + '</span></span>';
+    var x = document.createElement("button");
+    x.type = "button"; x.className = "toast-x"; x.setAttribute("aria-label", "Dismiss"); x.innerHTML = "&times;";
+    x.addEventListener("click", function (e) { e.preventDefault(); e.stopPropagation(); a.remove(); });
+    a.appendChild(x); stack.appendChild(a);
+    setTimeout(function () { a.remove(); }, 9000);
+    while (stack.children.length > 3) stack.removeChild(stack.firstChild);
+  }
+
+  function announce(data) {
+    var key = "notifBaseline_" + data.user_id, saved = null;
+    try { saved = sessionStorage.getItem(key); } catch (e) {}
+    if (baseline === null) baseline = saved === null ? data.latest_id : parseInt(saved, 10);
+    data.items.slice().reverse().forEach(function (n) {
+      if (n.id > baseline && !n.is_read) toast(n);
+    });
+    baseline = Math.max(baseline, data.latest_id);
+    try { sessionStorage.setItem(key, String(baseline)); } catch (e) {}
+  }
 
   function esc(s) { var d = document.createElement("div"); d.textContent = s == null ? "" : s; return d.innerHTML; }
 
@@ -27,6 +51,7 @@
       .then(function (data) {
         if (!data) return;
         render(data);
+        announce(data);
         if (lastUnread !== null && data.unread > lastUnread && document.title.indexOf("(") !== 0) {
           document.title = "(" + data.unread + ") " + document.title;
         }
@@ -47,6 +72,6 @@
   });
 
   poll();
-  setInterval(poll, 20000);                       // automatic refresh every 20 s
+  setInterval(poll, 15000);                       // automatic refresh every 15 s
   document.addEventListener("visibilitychange", function () { if (!document.hidden) poll(); });
 })();

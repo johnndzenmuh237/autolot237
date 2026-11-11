@@ -34,29 +34,49 @@ def log_action(action, entity, entity_id=None, details=None):
         db.session.rollback()
 
 
+def _create(user_ids, title, message, link, category):
+    """Create one notification per user, then push it to their phones."""
+    rows = []
+    for uid in user_ids:
+        n = Notification(user_id=uid, title=title[:150], message=(message or "")[:400], link=link, category=category)
+        db.session.add(n)
+        rows.append(n)
+    db.session.commit()
+    try:
+        from flask import url_for
+        from app.utils.push import send_for_notifications
+        send_for_notifications([{
+            "user_id": n.user_id, "title": n.title, "body": n.message, "tag": f"n{n.id}",
+            "url": url_for("notifications.open_item", notification_id=n.id),
+        } for n in rows])
+    except Exception:
+        pass
+
+
 def notify_roles(roles, title, message="", link=None, category="general", exclude_self=True):
     """Notify every active user whose role is in `roles`."""
     try:
         actor = _actor()
         users = User.query.filter(User.role.in_(list(roles)), User.is_active_account.is_(True)).all()
-        for u in users:
-            if exclude_self and actor and u.id == actor.id:
-                continue
-            db.session.add(Notification(
-                user_id=u.id, title=title[:150], message=(message or "")[:400],
-                link=link, category=category,
-            ))
-        db.session.commit()
+        ids = [u.id for u in users if not (exclude_self and actor and u.id == actor.id)]
+        if ids:
+            _create(ids, title, message, link, category)
+    except Exception:
+        db.session.rollback()
+
+
+def notify_users(user_ids, title, message="", link=None, category="general"):
+    """Notify an explicit list of people (used by manager messages)."""
+    try:
+        ids = list(dict.fromkeys(user_ids))
+        if ids:
+            _create(ids, title, message, link, category)
     except Exception:
         db.session.rollback()
 
 
 def notify_user(user_id, title, message="", link=None, category="general"):
     try:
-        db.session.add(Notification(
-            user_id=user_id, title=title[:150], message=(message or "")[:400],
-            link=link, category=category,
-        ))
-        db.session.commit()
+        _create([user_id], title, message, link, category)
     except Exception:
         db.session.rollback()

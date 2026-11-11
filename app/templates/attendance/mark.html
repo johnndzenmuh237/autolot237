@@ -2,6 +2,15 @@
 {% block title %}My Attendance{% endblock %}
 
 {% block content %}
+{% if inbox_preview %}
+<div class="card" style="margin-bottom:20px;">
+  <div class="card-header"><h3>Messages from your manager</h3><a class="link-arrow" href="{{ url_for('messages.inbox') }}">All messages &rarr;</a></div>
+  <div class="notif-list">{% for r in inbox_preview %}
+    <a class="notif-row {{ '' if r.read_at else 'unread' }}" href="{{ url_for('messages.view', message_id=r.message.id) }}"><span class="notif-dot"></span>
+      <span class="notif-body"><strong>{{ r.message.subject }}</strong><span>{{ r.message.body[:120] }}{{ '...' if r.message.body|length > 120 }}</span></span>
+      <span class="notif-time">{{ r.message.created_at.strftime('%d %b %H:%M') }}</span></a>{% endfor %}</div>
+</div>
+{% endif %}
 <div class="section-head" style="margin-top:0;">
   <h2>My Attendance</h2>
 </div>

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% set page_title = "Messages" %}
+{% set page_subtitle = "Messages from the manager" if not current_user.can_view_admin else "Messages sent to staff" %}
+{% block title %}Messages{% endblock %}
+{% block content %}
+<div class="section-head" style="margin-top:0;">
+  <div class="tabs" style="margin:0;">
+    {% if not current_user.is_owner %}<a class="tab {{ 'active' if tab == 'inbox' }}" href="{{ url_for('messages.inbox', tab='inbox') }}">Inbox</a>{% endif %}
+    {% if current_user.can_view_admin %}<a class="tab {{ 'active' if tab == 'sent' }}" href="{{ url_for('messages.inbox', tab='sent') }}">Sent</a>{% endif %}
+  </div>
+  {% if current_user.is_admin %}<a class="btn btn-primary" href="{{ url_for('messages.compose') }}">+ New message</a>{% endif %}
+</div>
+
+<div class="card">
+  <div class="notif-list">
+  {% if tab == 'sent' and current_user.can_view_admin %}
+    {% for m in sent %}
+      <a class="notif-row" href="{{ url_for('messages.view', message_id=m.id) }}">
+        <span class="notif-dot"></span>
+        <span class="notif-body"><strong>{{ m.subject }}</strong><span>To {{ m.audience }} &middot; read by {{ m.recipients|selectattr('read_at')|list|length }} of {{ m.recipients|length }}{% if current_user.is_owner %} &middot; from {{ m.sender.full_name }}{% endif %}</span></span>
+        <span class="notif-time">{{ m.created_at.strftime('%d %b %Y %H:%M') }}</span>
+      </a>
+    {% else %}<p class="muted">No messages sent yet.</p>{% endfor %}
+  {% else %}
+    {% for r in received %}
+      <a class="notif-row {{ '' if r.read_at else 'unread' }}" href="{{ url_for('messages.view', message_id=r.message.id) }}">
+        <span class="notif-dot"></span>
+        <span class="notif-body"><strong>{{ r.message.subject }}</strong><span>From {{ r.message.sender.full_name }}: {{ r.message.body[:140] }}{{ '...' if r.message.body|length > 140 }}</span></span>
+        <span class="notif-time">{{ r.message.created_at.strftime('%d %b %Y %H:%M') }}</span>
+      </a>
+    {% else %}<p class="muted">No messages yet. When your manager writes to you, it appears here and in your notification bell.</p>{% endfor %}
+  {% endif %}
+  </div>
+</div>
+{% endblock %}

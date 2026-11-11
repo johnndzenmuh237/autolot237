@@ -104,6 +104,11 @@
         </a>
       </div>
     {% endif %}
+    <div class="nav-group">
+      <div class="nav-label">Communication</div>
+      <a class="nav-link {{ 'active' if request.endpoint in ('messages.inbox', 'messages.view') }}" href="{{ url_for('messages.inbox') }}">{{ icon('mail') }}Messages{% if unread_messages %}<span class="nav-badge">{{ unread_messages }}</span>{% endif %}</a>
+      {% if current_user.is_admin %}<a class="nav-link {{ 'active' if request.endpoint == 'messages.compose' }}" href="{{ url_for('messages.compose') }}">{{ icon('send') }}Send Message</a>{% endif %}
+    </div>
   </nav>
 
   <div class="sidebar-footer">

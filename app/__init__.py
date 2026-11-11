@@ -54,6 +54,8 @@ def create_app(config_class=Config):
     from app.routes.notifications import notifications_bp
     from app.routes.pwa import pwa_bp
     from app.routes.people import people_bp
+    from app.routes.push import push_bp
+    from app.routes.messages import messages_bp
 
     app.register_blueprint(auth_bp)
     app.register_blueprint(admin_bp)
@@ -71,6 +73,8 @@ def create_app(config_class=Config):
     app.register_blueprint(notifications_bp)
     app.register_blueprint(pwa_bp)
     app.register_blueprint(people_bp)
+    app.register_blueprint(push_bp)
+    app.register_blueprint(messages_bp)
 
     # The bell polls every 20s and the PWA files are fetched constantly:
     # keep them out of the 200/hour default rate limit.
@@ -108,6 +112,16 @@ def create_app(config_class=Config):
     def inject_globals():
         from flask_login import current_user
         setup_open = False
+        unread_messages, inbox_preview = 0, []
+        try:
+            if current_user.is_authenticated:
+                from app.models.message import MessageRecipient, StaffMessage
+                unread_messages = MessageRecipient.query.filter_by(user_id=current_user.id, read_at=None).count()
+                if request.endpoint in ("seller.dashboard", "attendance.mark"):
+                    inbox_preview = (MessageRecipient.query.filter_by(user_id=current_user.id).join(StaffMessage)
+                                     .order_by(StaffMessage.created_at.desc()).limit(3).all())
+        except Exception:
+            unread_messages, inbox_preview = 0, []
         try:
             if current_user.is_authenticated and current_user.role == "admin":
                 from app.utils.owner_setup import owner_setup_available
@@ -116,6 +130,8 @@ def create_app(config_class=Config):
             setup_open = False
         return {
             "owner_setup_open": setup_open,
+            "unread_messages": unread_messages,
+            "inbox_preview": inbox_preview,
             "currency_symbol": app.config["CURRENCY_SYMBOL"],
             "current_user": current_user,
             "ga_measurement_id": app.config.get("GA_MEASUREMENT_ID", ""),

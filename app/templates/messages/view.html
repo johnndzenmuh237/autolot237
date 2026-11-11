@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% set page_title = "Message" %}
+{% set page_subtitle = "From " ~ msg.sender.full_name %}
+{% block title %}{{ msg.subject }}{% endblock %}
+{% block content %}
+<div class="card" style="max-width:760px;">
+  <h2 style="margin-bottom:6px;">{{ msg.subject }}</h2>
+  <div class="muted" style="margin-bottom:16px;">From {{ msg.sender.full_name }} &middot; {{ msg.created_at.strftime('%d %b %Y at %H:%M') }} &middot; To {{ msg.audience }}</div>
+  <div class="message-body">{{ msg.body }}</div>
+</div>
+{% if show_recipients %}
+<div class="section-head"><h2>Delivery</h2></div>
+<div class="card" style="max-width:760px;"><div class="table-wrap"><table>
+  <thead><tr><th>Staff member</th><th>Role</th><th>Status</th></tr></thead>
+  <tbody>{% for r in msg.recipients %}<tr><td>{{ r.user.full_name }}</td><td>{{ r.user.role_label }}</td>
+    <td>{% if r.read_at %}<span class="badge badge-good">Read {{ r.read_at.strftime('%d %b %H:%M') }}</span>{% else %}<span class="badge badge-neutral">Not read yet</span>{% endif %}</td></tr>{% endfor %}</tbody>
+</table></div></div>
+{% endif %}
+<p style="margin-top:16px;"><a class="btn btn-secondary" href="{{ url_for('messages.inbox') }}">&larr; Back to messages</a></p>
+{% endblock %}

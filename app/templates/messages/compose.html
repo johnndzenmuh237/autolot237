@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% set page_title = "New Message" %}
+{% set page_subtitle = "Write to one person, a group, or everyone — it reaches their phone too" %}
+{% block title %}New Message{% endblock %}
+{% block content %}
+<form method="POST" action="{{ url_for('messages.compose') }}" class="pro-form" style="max-width:860px;">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="card form-section">
+    <div class="form-section-title"><span class="step">1</span><div><h3>Who is this for?</h3><p>Pick a group, or choose people one by one.</p></div></div>
+    {% set aud = form.get('audience', 'all') %}
+    <div class="chips">
+      <label class="chip"><input type="radio" name="audience" value="all" {{ 'checked' if aud == 'all' }}> All staff</label>
+      <label class="chip"><input type="radio" name="audience" value="sellers" {{ 'checked' if aud == 'sellers' }}> All sellers</label>
+      <label class="chip"><input type="radio" name="audience" value="workers" {{ 'checked' if aud == 'workers' }}> All workers</label>
+      <label class="chip"><input type="radio" name="audience" value="selected" {{ 'checked' if aud == 'selected' }}> Choose people</label>
+    </div>
+    <div class="form-group" style="margin-top:16px;"><label>People <span class="opt">(used when &ldquo;Choose people&rdquo; is selected)</span></label>
+      <div class="chips">
+      {% for u in staff %}<label class="chip"><input type="checkbox" name="recipients" value="{{ u.id }}" {{ 'checked' if u.id|string in selected }}> {{ u.full_name }} <span class="opt">({{ u.role }})</span></label>
+      {% else %}<span class="muted">No active staff yet. Register sellers or workers first.</span>{% endfor %}
+      </div></div>
+  </div>
+  <div class="card form-section">
+    <div class="form-section-title"><span class="step">2</span><div><h3>Your message</h3><p>Staff get it in their notification bell, as a pop-up, and as a phone notification.</p></div></div>
+    <div class="form-grid">
+      <div class="form-group span-2"><label for="subject">Subject <b class="req">*</b></label><input id="subject" name="subject" maxlength="{{ max_subject }}" value="{{ form.get('subject','') }}" required></div>
+      <div class="form-group span-2"><label for="body">Message <b class="req">*</b></label><textarea id="body" name="body" rows="7" maxlength="{{ max_body }}" required>{{ form.get('body','') }}</textarea><span class="hint">Up to {{ max_body }} characters.</span></div>
+    </div>
+    <div class="form-actions"><button class="btn btn-primary" type="submit">Send message</button><a class="btn btn-secondary" href="{{ url_for('messages.inbox') }}">Cancel</a></div>
+  </div>
+</form>
+{% endblock %}
